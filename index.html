@@ -1,0 +1,1254 @@
+<!DOCTYPE html><html>
+<!--
+© (c) Copyright 2021 ooda space ltd
+The oo.computer profit share oriented open source licence:
+This is a edited and extended version of the BSD-2-Clause licence. The intent is to ensure that software modifications are: made publicly available on a decentralised network, communicated back to the oo.computer system, correctly indexed, and that modifiers stand to share in profits that arise from oo.computer value signals and the associated profit share mechanism.
+###############################################################################
+A. Redistribution and use:
+    1. Redistribution and use in source and binary forms, without modification, are permitted provided that the following conditions are met:
+            i.    Redistributions of source code must retain the above copyright notice and this text (Sections A., B., C., D., and E.).
+            ii.   Redistributions in binary form must reproduce the above copyright notice and this text (Sections A., B., C., D., and E.) in the documentation and/or other materials provided with the distribution.
+    2. Redistribution and use in source and binary forms, with modification, are permitted provided that the following conditions are met:
+            i.    Redistributions of source code must retain the above copyright notice and this text (Sections A., B., C., D., and E.). with Section C. modified as per A.2.iii).
+            ii.   Redistributions in binary form must reproduce the above copyright notice and this text (Sections A., B., C., D., and E. with Section C. modified as per A.2.iii) in the documentation and/or other materials provided with the distribution.
+            iii.  The modifier has updated Section C. below as described in Section D.
+            iv.   The modifier has signalled value in the modified file as described in section E.
+            v.    The modified file is kept available using the oo.computer idea-value-tree schema via the Hypercore Protocol network.
+    3. If any part of this text (Sections A., B., C., D., and E.) is held to be invalid it shall not invalidate the text as a whole or any other part of this text (Sections A., B., C., D., and E.).
+###############################################################################
+B. Disclaimer:
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
+C. The file
+    1. Media-type:                                              text/plain
+    2. ed25519 public key of modifier:                          0x08b54e9a935060bb55474d3b113f71b39b0a4b72c8083d19af9a000a91ac0826
+    3. Distance [integer dec]:                                  1
+    4. Context [256bit word hex]:                               0x0000000000000000000000000000000000000000000000000000000000000000
+    5. SHA3 256-bit hash of the file [only for redistributions in binary form, else "Not Applicable"]:  Not Applicable
+###############################################################################
+D. Instructions for updating Section C:
+    The file modifier must:
+        1. Replace the pubblic key (C.2) value with a ed25519 public key (related to a hypercore acting as a oo.computer signal chain), in hex notation, under the control of the modifier.
+        2. Increment the Distance (C.3) value by 1.
+        3. Replace the Context (C.4) value as follows:
+                i. Calculate the "idea" id, a 256-bit word, of the unmodified version of the file:
+                        unmodifiedIdea = 0x4d4544<MEDIA-TYPE-SHA1>[0..72]<unmodified-file-SHA1>
+                            where:  <MEDIA-TYPE-SHA1>[0..72] is the first 72 bits of the SHA1 hash of the modified file's media type (section D.) e.g. SHA1("text/javascript")
+                                    <unmodified-file-SHA1> is the SHA1 hash of the original file.
+                ii. Calculate the new context value, newContext:
+                        newContext = BitwiseRotateLeft(3*d,BitwiseXOR(BitwiseRotateRight(3*d,unModifiedContext),unmodifiedIdea))
+                            where:  d is the Distance value from Section C.3 of the unmodified file.
+                                    unModifiedContext is the Context value from Section C.4 of the unmodified file.
+                                    unmodifiedIdea is as calculated in D.3.i.
+                iii. Replace the Context (C.4) value in the modified file with newContext from D.3.ii.
+        3. For redistributions in binary form, update the file's SHA3 256 hash (C.5) value with the SHA3-256 hash of the modified file.
+###############################################################################
+E. Instructions for signalling value
+    1.  i. Calculate the "idea" id, a 256 bit word, of the modified file:
+              modifiedIdea = 0x4d4544<MEDIA-TYPE-SHA1>[0..72]<Modified-file-SHA1>
+                  where:  <MEDIA-TYPE-SHA1>[0..72] is the first 72 bits of the SHA1 hash of the modified file's media type (section D.) e.g. SHA1("text/javascript")
+                          <Modified-file-SHA1> is SHA1 hash of the modified file.
+        ii. Calculate the "prospectiveContext" id, a 256 bit word, for the value signal:
+              prospectiveContext = BitwiseRotateLeft(3*d,BitwiseXOR(BitwiseRotateRight(3*d,modifiedContext),modifiedIdea))
+                  where:  d is the Distance value from Section C. of the modified file.
+                          modifiedContext is the Context value from Section C. of the modified file.
+                          modifiedIdea is as calculated in E.2.i.
+        iii. Make sure the file is kept available via the ipfs network, and that the ipfs content identifier is written into the associated oo.computer value signal (see section E.2).
+    2. Create, and make available via the hypercore protocol network, an oo.computer value signal stored in a hypercore with the modifier's key (Section C.2 of the modified file)
+              where:  the d parameter is the Distance value from Section C. of the modified file.
+                      the context parameter is the Context value from Section C. of the modified file.
+                      the idea paramenter is the modifiedIdea calculated in E.1.i.
+                      the prospectiveContext parameter is as calculated in E.1.ii.
+                      the ipfs parameter is the ipfs content identifier of the modified file.
+    3. In the case of binary distribution, repeat E.1, and E.2 with the modified licence file [the above copyright notice and this text (Sections A., B., C., D., and E. with Section C. modified as per A.2.iii)] in place of Modified-file
+###############################################################################
+-->
+<head>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+  <!--<script src="lib/adaptor.js"></script>
+  <script src="lib/hyper-sdk-bundle.js"></script>-->
+
+<style>
+    html {-ms-overflow-style: none;scrollbar-width: none;height: 100%;overflow-x:auto;overflow-y: hidden;}
+    html::-webkit-scrollbar {display: none;}
+    body {font-size: 40px;height: 100%;margin:0px;padding: 0px;}
+</style>
+
+<link rel="shortcut icon" href="./icon.png" />
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+</head><body>
+
+
+<script id="init">
+	//console.log('EDRIVE?????',edrive)
+
+let IdeaValueTreeIndex =0
+let signalChainIndex =0
+async function IdeaValueTreeExists(){
+    
+    let ind = String(IdeaValueTreeIndex)
+    IdeaValueTreeIndex++
+    window.api.send('IdeaValueTree:exists'+'.'+ind)
+    return new Promise (r => {
+        
+        console.log('awaiting reponse for','IdeaValueTree:exists_response'+'.'+ind)
+        window.api.receive('IdeaValueTree:exists_response'+'.'+ind,(result)=>{
+            console.log('got reponse for','IdeaValueTree:exists_response'+'.'+ind,result)
+               result = r(result)
+            })
+    })
+    
+}
+
+class HyperDrive {
+    
+    constructor(key){
+        if (!key) key='';
+        return (async () => {
+            this.key = await this.init(key);
+            return this;
+        })()
+        //this.init(key).then(r => {this.key = r});
+    }
+    isReady = false;
+    index = 0
+    async init(key){
+        return new Promise(r => {
+            this.index++;
+            let path = '/'
+            window.api.send('Hyperdrive:init.'+String(key)+String(this.index),[key])
+            window.api.receive('Hyperdrive:init_response.'+String(key)+String(this.index),(result)=>{
+                this.isReady = true;
+                r(result)
+            })
+        })}
+    async readdir(path){
+        return new Promise(r => {
+            this.index++;
+            window.api.send('Hyperdrive:readdir.'+String(this.key)+String(this.index),[this.key,path])
+            window.api.receive('Hyperdrive:readdir_response.'+String(this.key)+String(this.index),(result)=>{
+                r(result)
+            })
+        })
+    }
+    async readFile(file){
+        return new Promise(r => {
+                this.index++;
+                window.api.send('Hyperdrive:readFile.'+String(this.key)+String(this.index),[this.key,file])
+                window.api.receive('Hyperdrive:readFile_response.'+String(this.key)+String(this.index),(result)=>{
+                r(result)
+            })
+        })
+    }
+    async writeFile(path,file){
+        return new Promise(r => {
+            this.index++;
+            window.api.send('Hyperdrive:writeFile.'+String(this.key)+String(this.index),[this.key,path,file])
+            window.api.receive('Hyperdrive:writeFile_response.'+String(this.key)+String(this.index),(result)=>{
+                r(result)
+            })
+        })
+    }
+}
+
+	
+
+// add string replaceAll polyfill
+if (!String.prototype.replaceAll)
+{
+    String.prototype.replaceAll = function(search, replace){
+      return this.split(search).join(replace);
+    }
+}
+
+async function signSignal(signal,jwk){
+
+//  signal.PROSPECTIVECONTEXT = XORcontextidea(signal.CONTEXT,signal.IDEA,signal.DISTANCE)
+  let enc = new TextEncoder();
+  let msg = enc.encode(signal.SIGNAL)
+
+          signature= await crypto.subtle.sign(    {name: "ECDSA",
+              hash: {name: "SHA-384"},},keyPair.privateKey,msg)
+
+              buffer = new Uint8Array(signature);
+
+
+          signat = ToBase64(buffer);//btoa(buffer)//buffer.reduce((prev,pres)=>{return prev.toString(16)+pres.toString(16)})
+            console.log('signature',signature,signat)
+
+            let hash = await sha256(msg)
+
+          signal.SIGNATURE = signat
+          signal.SIGNALHASH = hash
+
+          return signal
+}
+
+
+// main signal set object
+let oodaSpaceSignalSet = {
+
+          man: function (){return new Object(
+            {
+            $SIGNALLER : `The ed25519 public key representing the signaller's oo.computer signal chain (a hypercore), in hex format.`,
+            $OTHERSIGNALLER : `The ed25519 public key representing oo.computer signal chain (a hypercore) of a signaller other than $SIGNALLER, in hex format`,
+            $IDEATREE : `The ed25519 public key representing the signaller's oo.computer idea-value-tree (a hypercore protocol url), in hex format.`,
+            $CONTEXT : `A 256bit word represent a context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
+            $CONTEXTOWNER : `The public key of the owner of $CONTEXT as recognised by $SIGNALLER.`,
+            $IDEA : `A 256bit word represent a context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
+            $IDEAOWNER : `The public key of the owner of $IDEA as recognised by $SIGNALLER.`,
+            $DISTANCE : `The distance of the referenced oo. An oo is three interrelated 256bit words with an integer (distance) as defined in the oo.computer system.`,
+            $PROSPECTIVECONTEXT : `A 256bit word representing a prospective context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
+            $PROSPECTIVECONTEXTOWNER : `The public key of the owner of $PROSPECTIVECONTEXT as recognised by $SIGNALLER.`,
+            $AMOUNT : `An amount referenced in the signal. Must be a positive number representable in javascript.`,
+            $PREVSIGNALHASH : `The hash of the parent signal, as selected by $SIGNALLER`,
+            $SIGNALNO : `An integer reference for the signal from $SIGNALLER - typical use is for the sequence number`,
+            $CURRENCY : `An indication of the currency. It is suggested to use an ISO4217 code (e.g. USD) or similar (e.g. BTC). Metric prefix used as required (e.g. uBTC, dGBP, kJPY);`,
+            $WORD : `A 256bit word referenced in the signal.`,
+            $WORDS : `A list of 256bit words referenced in the signal.`,
+            $OTHERSIGNAL : `Another signal referenced in the transaction.`,
+            $OTHERSIGNALS : `A list of other signal (identifed with hash and signature) referenced in the signal.`,
+            $SIGNALSETVERSION : `The SHA256 hash of a protocol object (utf-8 representation of a javascript object)`
+          })},
+
+          INIT: function(signaller='$SIGNALLER',signalsetversion='$SIGNALSETVERSION',ideatree='$IDEATREE') {
+            let signal =`INIT:
+
+I will create an oo.computer signal chain using the oo.computer signal set on the hypercore with address 
+
+hyper://${signaller}.
+
+I will use VALUE signals to indicate the value of digitally encoded ideas in contexts. I will use these to create an oo.computer idea tree at 
+
+hyper://${ideatree}
+
+I will use DISCARD signals to indicate that previous value signals, for a given idea in context, should be discarded.
+
+I will use CLAIM and TRANSFER signals to claim ownership of ideas or contexts and to transfer ownership claims to others.
+
+I will use the INVOICE signals to request value signal payments.
+
+I will use the RECEIPT signals after invoiced payments have been recieved.
+
+I will use the VERSION signal to indicate any change the to the set of signals I use. Any prior valid signals shall continue to be valid.
+
+I will use the HACKED signal to indicate that my private keys have been compromised.
+
+I give permission for all of my signals to be freely duplicated and stored.
+
+The ooda space signal set is defined in the javascript signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
+
+I will create an oo.computer idea tree with the address 
+
+hyper://${signaller} 
+
+such that it can be verifiably derived from the above signal chain.
+
+`
+let signalHash = ''//hash of signal
+            return new Object(
+                              {
+                                        SIGNALTYPE: 'INIT',
+                                        SIGNALLER : signaller,
+                                        SIGNAL :  String(signal),
+                                        SIGNATURE : '',
+                                        setSignature : function(signature){this.SIGNATURE = signature;},
+                                        SIGNALNO : 0,
+                                        SIGNALHASH : signalHash,
+                                        PREVSIGNALHASH : "0x00"
+                              });
+          },
+
+          VALUE: function(signaller='$SIGNALLER',context='$CONTEXT',contextOwner='$CONTEXTOWNER',idea='$IDEA',ideaOwner='$IDEAOWNER',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',prospectiveContextOwner='$PROSPECTIVECONTEXTOWNER',amount='$AMOUNT',currency='$CURRENCY',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+
+let signal =`VALUE:
+
+I hereby signal a value of ${amount} uBTC in the following oo within the oo.computer value tree:
+
+context: ${context}
+idea: ${idea}
+distance: ${distance}
+
+with a resulting prospectiveContext of: ${prospectivecontext}
+
+I recognise that:
+
+${contextOwner} is the owner of context
+${ideaOwner} is the owner of idea
+${prospectiveContextOwner} is the owner of prospectiveContext
+
+I will pay the owner* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay the owner* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay the owner* of prospectiveContext 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay future value signallers** 0.1 x ${amount} uBTC in ${currency} for faciliation of the payment.
+
+*If I am the owner, then I will instead pay future value signallers** 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+** via the oo.computer ltd profit share system
+
+I will store the data from which the idea is derived (if any) and track its ownership and transfer signals.
+
+If idea is a value signaller, I will store a copy of their value and discard signals.
+If context is a value signaller, I will store a copy of their value and discard signals that have a context of ${prospectivecontext}.
+
+This is signal number ${signalNo} in my set of signals.
+
+I reserve the right to invalidate this signal using a signed discard signal.
+`
+let signalHash = ''//hash of signal
+            return new Object(
+                              {
+                                        SIGNALTYPE: 'VALUE',
+                                        SIGNALLER : signaller,
+                                        CONTEXT : context,
+                                        IDEA : idea,
+                                        DISTANCE : distance,
+                                        PROSPECTIVECONTEXT : XORcontextidea(context,idea,distance),
+                                        AMOUNT : amount,
+                                        CURRENCY : currency,
+                                        SIGNAL :  String(signal),
+                                        SIGNATURE : '',
+                                        setSignature : function(signature){this.SIGNATURE = signature;},
+                                        SIGNALNO : signalNo,
+                                        SIGNALHASH : signalHash,
+                                        PREVSIGNALHASH : prevSignalHash
+                              });
+          },
+
+
+
+
+
+          DISCARD: function(signaller='$SIGNALLER',context='$CONTEXT',idea='$IDEA',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`DISCARD:
+
+I am ${signaller}
+
+I hereby invalidate all my prior value signals in the following oo within the oo.computer value tree:
+
+context: ${context}
+idea: ${idea}
+distance: ${distance}
+
+I will honour any invoiced value signals but I will no longer make any uninvoiced payments.
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'DISCARD',
+                                                  SIGNAL : signal,
+                                                  SIGNALLER : signaller,
+                                                  CONTEXT : context,
+                                                  IDEA : idea,
+                                                  DISTANCE : distance,
+                                                  PROSPECTIVECONTEXT : prospectivecontext,
+                                                  SIGNAL :  signal,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          },
+
+          INVOICE: function(signaller='$SIGNALLER',otherSignaller='$OTHERSIGNALLER',amount='$AMOUNT',currency='$CURRENCY',idea='$IDEA',words='$WORDS',otherSignals='$OTHERSIGNALS',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`INVOICE:
+
+I request payment of ${amount} ${currency} from ${otherSignaller} in relation to:
+
+${words}
+
+in the following value signals:
+
+${otherSignals}
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'INVOICE',
+                                                  SIGNAL : signal,
+                                                  SIGNALLER : signaller,
+                                                  OTHERSIGNALLER : otherSignaller,
+                                                  AMOUNT : amount,
+                                                  CURRENCY : currency,
+                                                  WORDS : words,
+                                                  OTHERSIGNALS :  otherSignals,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          },
+
+          VERSION: function(signaller='$SIGNALLER',ideatree='$IDEATREE',signalsetversion='$SIGNALSETVERSION',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`VERSION:
+
+From now on I will be using the oo.computer signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
+
+I will use these signals to create an oo.computer idea tree at hyper://${ideatree}
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'CHANGE_SIGNALSET',
+                                                  SIGNAL : signal,
+                                                  SIGNALLER : signaller,
+                                                  SIGNALSETVERSION : signalsetversion,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          },
+
+          CLAIM: function(signaller='$SIGNALLER',word='$WORD',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`CLAIM
+
+I initiate and claim ownership of ${word}.
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'CLAIM',
+                                                  SIGNAL : signal,
+                                                  SIGNALLER : signaller,
+                                                  WORD : word,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          },
+
+          HACKED: function(signaller='$SIGNALLER',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`HACKED:
+
+My private key has been compromised.
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'CLAIM',
+                                                  SIGNAL : signal,
+                                                  SIGNALLER : signaller,
+                                                  WORD : word,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          },
+
+          TRANSFER: function(signaller='$SIGNALLER',word='$WORD',otherSignaller='$OTHERSIGNALLER',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          let signal =`TRANSFER:
+
+I hereby transfer ownership of ${word} to ${otherSignaller}.
+
+          `
+          let signalHash = ''//hash of signal
+                      return new Object(
+                                        {
+                                                  SIGNALTYPE: 'TRANSFER',
+                                                  SIGNAL: signal,
+                                                  SIGNALLER : signaller,
+                                                  WORD : word,
+                                                  OTHERSIGNALLER : otherSignaller,
+                                                  SIGNATURE : '',
+                                                  SIGNALNO : signalNo,
+                                                  SIGNALHASH : signalHash,
+                                                  PREVSIGNALHASH : prevSignalHash
+                                        });
+          }
+}
+
+let hypersdk
+let myCore
+let oo
+
+let mediaObj={}
+let MIMEObj={}
+console.log('dot1')
+
+
+let keyPair
+let keyobj
+let signaller
+
+
+const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
+
+//const await loadScript = name => new Promise(r => import(name).then(r))
+const loadScript = name => new Promise(r => {let sc = document.createElement("script");sc.src=name;sc.type="text/javascript";sc.onload=r;document.getElementById("base").appendChild(sc);})
+
+
+
+// This function is used to establish the global message manager object msgMan to handle message passing between oos.
+let mm = function(){
+
+    // This creates a js proxy object on a passed array (for the message queues). It defines a newmsg function that returns a promise that resolves when a new message has been pushed to the queue. This allows each oo to asyncrhonously watch for new messages.
+    this.msgarray = function(msgQueueArray){
+      function res(){return}
+      let watchedMsgQueueArray = new Proxy(msgQueueArray, {set(arr, key, val) {arr[key] = val; res(); return true;}});
+      watchedMsgQueueArray.newmsg = function(){return new Promise(r => res = r)};
+      return watchedMsgQueueArray;
+    }
+
+    this.date = new Date();
+
+    // This is called by each oo as it first runs to register it in the msg manager. Or, it is called when the message manager first comes across a message from or to a new oo. It initialses the message queues; inbound and outbound queues for each oo, a holding queue to hold messages until the oo is instantiated in the dom. Also inDom and on Server, flags intended for future use so that the message manager can pass messages remotely.
+    this.register = async function(name,priority,onServer=false){
+      if (!this[name]){
+            this[name] = {msgFlag : false,
+                            msgq_from : this.msgarray([]),
+                            msgq_to : this.msgarray([]),
+                            holdingq : [],
+                            inDom : false,
+                            onServer : onServer,
+                            getHeldMsgs : function (){
+                                  //this function retrieves msgs held until receiver requests ( to avoid msg loss during initialisation)
+                                  if(this.holdingq.length>0){
+                                        for (let i = 0; i< this.holdingq.length;i++){
+                                            this.msgq_to.push(this.holdingq[i]);
+                                        }
+                                        this.holdingq = [];
+                                  }
+                            }
+                          };
+        }
+      this.msgListener(name,priority);
+      return new Promise((resolve) => {resolve(true)});
+    },
+
+    // This listens for new messages in the outbound message queues for all of the messages. It then routes it to the inbound message queues of the oos listed in the msg.params.to field.
+    this.msgListener = async function(name,priority){
+                let msg
+                while(true){
+                      await this[name].msgq_from.newmsg();
+                      while(this[name].msgq_from.length>0){
+                            let msg = JSON.parse(this[name].msgq_from.pop());
+                            if (msg.method){ //as JSONrpc structure used need to distinguish between requests/notifications [with msg.method] and responses [with msg.result]
+                                  for (let n in msg.params.to){
+                                          if (!(this[msg.params.to[n]])){
+                                                // if any of the to oos aren't registered in the msg manager, register them.
+                                                await this.register(msg.params.to[n]);
+                                                if (!this[msg.params.to[n]].inDom){
+                                                      // If the oo's js code hasn't yet run, puts message in holding q to be accessed when inDom or onServer
+                                                      this[msg.params.to[n]].holdingq.push(msg)
+                                                }
+                                          }
+                                          else { // the message must exist. put it in the oo's inbound queue.
+                                                try {
+                                                    this[msg.params.to[n]].msgq_to.push(msg);
+                                                    //console.log('sending method:', msg.method,msg.params,msg.proc_chain)
+                                                }
+                                                catch {
+                                                    Error(`Msg delivery failed: ${msg.method},${msg.params.to}`)
+                                                }
+                                          }
+                                    }
+                                }
+                                else if (msg.result){
+                                      if (!(this[msg.result.to])){
+                                          // if any of the to oos aren't registered in the msg manager, register them.
+                                          await this.register(msg.result.to);
+                                          if (!this[msg.result.to].inDom){
+                                                // If the oo's js code hasn't yet run, puts message in holding q to be accessed when inDom or onServer
+                                                this[msg.result.to].holdingq.push(msg) // puts message in holding q to be accessed when inDom or onServer
+                                          }
+                                      }
+                                      else { // the message must exist. put it in the oo's inbound queue.
+                                              try {
+                                                this[msg.result.to].msgq_to.push(msg);
+                                                //console.log('sending result:', msg)
+                                              }
+                                              catch {
+                                                Error(`Msg delivery failed: ${msg.id},${msg.result.to}`)
+                                              }
+                                      }
+                                  }
+                                  else { // must not be JSONrpc structured, ignore
+                                    console.warn(`Msg delivery failed: ${msg},${msg.params.to}`)
+                                  }
+                       } // end of message batch [while(this[name].msgq_from.length>0)]
+                  } // end of infinite loop [while(true)]
+      }// end of message listener definition
+
+}; // end of mm definition
+
+// create the global message manager object
+msgMan = new mm;
+
+
+/*Thesee vars and utility functions locate the oos used to create the site */
+
+let metatthisprospective
+let metathisooManagersprospective//'0x1111111111111111111111111111111111111111111111111111111111111' //XORcontextidea(metatthisprospective,hexifyString('oo'),1)
+let metaoodistance = 1
+let txtToOOId
+let txtToOOhk
+let peers
+let initNeeded = false
+let chunks = [];
+let drive
+let LeeKey = "092ee0aff22a61aaf0bcfd997adae3d8299cb453935e48c7427f5cc7ed48744b" // key for Lee's filter, the default that loads on first visit.
+let IdeaValueTree = {}
+let signalChain = {}
+let initSignalChain
+let IPFS = {}
+
+// this must run on first pass of the code in the browser, so IIFE:
+;(async function(){
+
+
+    window.api.receive("console_message",(msg)=>{console.log('MSG: ',msg)})
+
+  await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+  console.log('dom loaded')
+  await loadScript("lib/rusha.min.js")
+  await loadScript("lib/biginteger.min.js")
+  await loadScript("lib/util_web3v2.js")
+  await loadScript("lib/jdenticon.min.js")
+  await loadScript("lib/purify.min.js")
+  //hypersdk = await window.hyperSDK({swarmOpts:{preferredPort:42420,wsProxy:'wss://oo.computer/proxy'}});//,webrtcBootstrap:'https://109.123.82.242/proxy'
+
+    
+    let IPFSIndex = 0
+    IPFS.add =  data => new Promise(r => {
+    console.log('ipfs adding',data)
+        IPFSIndex++
+        window.api.send('IPFS:add'+'.'+String(IPFSIndex),data)
+        window.api.receive('IPFS:add_response'+'.'+String(IPFSIndex),(result)=>{
+            r(result)
+        })
+    })
+    IPFS.cat =  cid => new Promise(r => {
+    console.log('ipfs cating',cid)
+        IPFSIndex++
+        window.api.send('IPFS:cat'+'.'+String(IPFSIndex),cid)
+        window.api.receive('IPFS:cat_response'+'.'+String(IPFSIndex),(result)=>{
+            r(result)
+        })
+    })
+
+  let IdeaValueTreeFlag = false
+  IdeaValueTreeFlag = await IdeaValueTreeExists()
+  if (!IdeaValueTreeFlag){ initNeeded = true}
+      let initIdeaValueTree =  () => new Promise(r => {
+    		let path = '/'
+            IdeaValueTreeIndex++
+    		window.api.send('initIdeaValueTree'+'.'+String(IdeaValueTreeIndex))
+    		window.api.receive('initIdeaValueTree_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
+    			r(result)
+    		})
+    	})
+      IdeaValueTree.key = await initIdeaValueTree()
+      //}
+
+
+
+	IdeaValueTree.readdir =  drivekey => new Promise(r => {
+		let path = '/'
+        IdeaValueTreeIndex++
+		window.api.send('readdir'+'.'+String(IdeaValueTreeIndex),[drivekey,path])
+		window.api.receive('readdir_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
+			r(result)
+		})
+	})
+
+	IdeaValueTree.readFile =  (path) => new Promise(r => {
+        IdeaValueTreeIndex++
+		window.api.send('IdeaValueTree:readFile'+'.'+String(IdeaValueTreeIndex),[path])
+		window.api.receive('IdeaValueTree:readFile_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
+			r(result)
+		})
+	})
+
+	IdeaValueTree.writeFile =  (path,file) => new Promise(r => {
+        IdeaValueTreeIndex++
+		window.api.send('writeFile'+'.'+String(IdeaValueTreeIndex),[path,file])
+		window.api.receive('writeFile_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
+			r(result)
+		})
+
+	})
+
+    let initSignalChain = () => new Promise(r => {
+        signalChainIndex++
+        console.log('sending chain init')
+        window.api.send('initSignalChain'+'.'+String(signalChainIndex))
+        window.api.receive('initSignalChain_response'+'.'+String(signalChainIndex),(result)=>{
+            console.log('chain init',result)
+            r(result);
+        })
+    })
+    signalChain.key = await initSignalChain()
+
+    signalChain.append =  (file) => new Promise(r => {
+        signalChainIndex++
+        window.api.send('signalChain:append'+'.'+String(signalChainIndex),[file])
+        window.api.receive('signalChain:append_response'+'.'+String(signalChainIndex),(result)=>{
+            r(result)
+        })
+
+    })
+
+    signalChain.get =  blockNo => new Promise(r => {
+        signalChainIndex++
+        window.api.send('signalChain:get.'+String(signalChainIndex),[blockNo])
+        window.api.receive('signalChain:get_response.'+String(signalChainIndex),(result)=>{
+            r(result)
+        })
+    })
+
+
+
+
+  data = await signalChain.get(0,{wait:false}).then((r)=>{console.log('get r initNeeded?',r)}).catch((e)=>{//**
+    console.log('get error initNeeded?',e)
+  initNeeded = true})
+
+  /*try{
+
+      IdeaValueTree = await hypersdk.Hyperdrive('IdeaValueTree')
+      await IdeaValueTree.ready()
+  }
+  catch(e) {
+    console.log('already there1',e)
+  }*/
+ /* try{
+  signalChain = await hypersdk.Hypercore('signalChain')
+
+}
+  catch(e) {
+    console.log('already there2',e)
+  }*/
+
+//**})
+
+  keyPair = await window.crypto.subtle.generateKey(
+  {
+    name: "ECDSA",
+    namedCurve: "P-384"
+  },
+  true,
+  ["sign", "verify"]
+  );
+  k = await crypto.subtle.exportKey('jwk',keyPair.publicKey)
+  kash = await sha256(JSON.stringify(k))
+
+
+    console.log('IdeaValueTree exists',IdeaValueTree,IdeaValueTree.key)
+    let ws = new WebSocket('wss://oo.computer/peers')
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
+      ws.send(JSON.stringify({"jsonrpc":"2.0","method":"peers","params":{}}))
+      ws.onmessage = (m) => {
+        console.log('message22',m,JSON.parse(m.data))
+        let msg = JSON.parse(m.data)
+        switch (msg.id) {
+          case 'peers':
+            peers = msg.result.peers
+            break;
+          default:
+
+        }
+
+      }
+    }
+    /*while (IdeaValueTree.key == null) {
+      kash = '0x' + IdeaValueTree.key //await sha256(JSON.stringify(k))
+    }*/
+  kash = IdeaValueTree.key //await sha256(JSON.stringify(k))
+  kash =  '0x'+kash //'hyper://' +
+
+    keyobj = {'ID':`${String(kash)}`,'KEY' : JSON.stringify({"key":kash}),'TYPE':'HYP','GENERATION_ALG':{
+    name: "ed25519",
+    namedCurve: "na"
+    },'VERIFICATION_ALG':{name: "ed25519",
+      hash: {name: "na"},}}
+
+      signaller = IdeaValueTree.key
+
+//JWK__${String(kash).slice(-54)
+
+
+//  await loadScript("lib/contractsetup6_web3v2.js")
+
+  metatthisprospective = XORcontextidea('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',hexifyString('this'),0)
+  metathisooManagersprospective = metatthisprospective//'0x1111111111111111111111111111111111111111111111111111111111111' //XORcontextidea(metatthisprospective,hexifyString('oo'),1)
+
+  txtToOOId = function (txt){
+    return '_' + metathisooManagersprospective + '_' + XORcontextidea(metathisooManagersprospective,hexifyString(txt),metaoodistance)//2
+  }
+  txtToOOhk = function (txt){
+    return XORcontextidea(metathisooManagersprospective,hexifyString(txt),metaoodistance)
+  }
+
+  await loadScript("lib/ooSpawner.js")
+  await loadScript("lib/ooIconCreator.js")
+  //await loadScript("lib/ooWeb3WSManager.js")
+  await loadScript("lib/ooLogSorter.js")
+  await loadScript("lib/ooFilterCurator.js")
+  await loadScript("lib/ooContextCurator.js")
+  await loadScript("lib/ooFilter.js")
+  await loadScript("lib/ooContextManager.js")
+  await loadScript("lib/ooIdea.js")
+  await loadScript("lib/ooLogo.js")
+  await loadScript("lib/ooMetaLogo.js")
+  await loadScript("lib/ooInput.js")
+  await loadScript("lib/ooFilterInput.js")
+  await loadScript("lib/ooFilterMain.js")
+  await loadScript("lib/ooMetaFilterInput.js")
+  await loadScript("lib/ooPendingTxManager.js")
+  await loadScript("lib/ooContentGetter.js")
+  await loadScript("lib/ooFilterFiller.js")
+  //await loadScript("lib/ooWebWorkerManager.js")
+  await loadScript("lib/ooUserComms.js")
+  await loadScript("lib/ooHyperManager.js")
+  await loadScript("lib/ooBaseTemplate.js")
+
+
+  //procedure used to instantiate an oo in the document.
+  let createProc = async function(txt) {
+    let jel = document.createElement('script');
+     jel.innerHTML = txt;
+    document.getElementById('main').append(jel);
+  }
+
+  // make sure there is a dom to put oos in!
+
+
+  // start the various oos needed to construct and run the site. They are place in the meta layout layer
+
+  createProc(spawner_proc(metathisooManagersprospective,txtToOOhk('Spawner'),metaoodistance,txtToOOId('Spawner')));
+
+// a hack to ensure background stays in place when input focus shifts. I do not like this but it works. would be better to addres on focus change in ooInput etc
+  while(true){
+    await pause(0.1)
+    document.getElementById('background').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+    document.getElementById('backgroundoverlay').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+
+  }
+
+})();
+
+
+
+// setup Horizontal scrolling.
+window.addEventListener('wheel', (e) => {
+      if (e.target.id =="main" || e.target.id=="base"  || e.target.id=="meta" || e.target.id=="backgroundlabels" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7filterbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7txbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7oobackground"  || e.target === document.getElementsByTagName('html')[0]  || e.target.id=="backgroundoverlay"){
+            window.focus()
+            let wheelDelta = e.wheelDelta;
+            let deltaY = e.deltaY;
+            // handles chrome etc
+            if (wheelDelta) {
+                delta = -wheelDelta / 120;
+            }
+            // handles firefox etc
+            if(deltaY) {
+                deltaY > 0 ? delta = 1 : delta = -1;
+            }
+            window.scrollBy(delta*20,0)
+            document.getElementById('background').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+            document.getElementById('backgroundoverlay').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+      }
+})
+
+//set the perspective origin based on the horizonal scroll position (includes reaction to prgrammatic scrolls)
+    document.addEventListener('scroll',async (e) => {
+          let middle = window.pageXOffset + (window.innerWidth * 0.5)//
+          document.getElementById('base').style.cssText += "perspective-origin: "+ String(middle) + "px 50px;"
+    })
+
+
+</script>
+<!--
+<script type="module">
+
+  // Find the latest version by visiting https://unpkg.com/three. The URL will
+  // redirect to the newest stable release.
+
+
+
+
+  import * as THREE from './build/three.module.js';
+
+  import Stats from './lib/jsm/libs/stats.module.js';
+
+  import { GUI } from './lib/jsm/libs/dat.gui.module.js';
+  import { OrbitControls } from './lib/jsm/controls/OrbitControls.js';
+  import { Water } from './lib/jsm/objects/Water.js';
+  import { Sky } from './lib/jsm/objects/Sky.js';
+  import { CSM } from './lib/jsm/csm/CSM.js';
+  import { CSMHelper } from './lib/jsm/csm/CSMHelper.js';
+
+  var container, stats;
+  var camera, scene, renderer,csm, csmHelper;
+  var controls, water, sun, mesh;
+
+  init();
+  animate();
+
+  function init() {
+
+    container = document.getElementById( 'background' );
+
+    //
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( document.getElementById('background').getBoundingClientRect().width, document.getElementById('background').getBoundingClientRect().height );
+    container.appendChild( renderer.domElement );
+
+    //
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 10, 200000 );
+    camera.position.set( 300, 100, -400 );
+//#camerapos
+
+  //
+
+    sun = new THREE.Vector3();
+
+    // Water
+
+    var waterGeometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
+
+    water = new Water(
+      waterGeometry,
+      {
+        textureWidth: 512,
+        textureHeight: 512,
+        waterNormals: new THREE.TextureLoader().load( 'textures/waternormals.jpg', function ( texture ) {
+
+          texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+        } ),
+        alpha: 1.0,
+        sunDirection: new THREE.Vector3(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 3.7,
+        fog: scene.fog !== undefined
+      }
+    );
+
+    water.rotation.x = - Math.PI / 2;
+
+    scene.add( water );
+
+    // Skybox
+
+    var sky = new Sky();
+    sky.scale.setScalar( 100000 );
+    scene.add( sky );
+
+    var ambientLight = new THREE.AmbientLight( 0xcccccc );
+				scene.add( ambientLight );
+
+    var uniforms = sky.material.uniforms;
+
+    uniforms[ 'turbidity' ].value = 9;
+    uniforms[ 'rayleigh' ].value = 2.2;
+    uniforms[ 'mieCoefficient' ].value = 0.005;
+    uniforms[ 'mieDirectionalG' ].value = 0.8;
+
+    var parameters = {
+      inclination: 0.5,
+      azimuth: 0.9417
+    };
+
+    var pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+    function updateSun() {
+
+      var theta = Math.PI * ( parameters.inclination - 0.5 );
+      var phi = 2 * Math.PI * ( parameters.azimuth - 0.5 );
+
+      sun.x = Math.cos( phi );
+      sun.y = Math.sin( phi ) * Math.sin( theta );
+      sun.z = Math.sin( phi ) * Math.cos( theta );
+
+      sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
+      water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
+
+      scene.environment = pmremGenerator.fromScene( sky ).texture;
+
+    }
+
+    updateSun();
+
+    //
+    var params = {
+      orthographic: true,
+      fade: false,
+      far: 1000000000000000,
+      mode: 'practical',
+      lightX: - 1,
+      lightY: - 1,
+      lightZ: - 1,
+      margin: 100,
+      lightFar: 10000000000000000,
+      lightNear: 1,
+      autoUpdateHelper: true,
+      updateHelper: function () {
+
+        csmHelper.update();
+
+      }
+    };
+    csm = new CSM({
+      maxFar: params.far,
+      cascades: 4,
+      mode: params.mode,
+      parent: scene,
+      shadowMapSize: 1024,
+      lightDirection: new THREE.Vector3( params.lightX, params.lightY, params.lightZ ).normalize(),
+      camera: camera
+    } );
+
+    csmHelper = new CSMHelper( csm );
+    csmHelper.visible = true;
+    //scene.add( csmHelper );
+    var material1 = new THREE.MeshPhongMaterial( { color: 'black' } );
+    csm.setupMaterial( material1 );
+
+    var material2 = new THREE.MeshPhongMaterial( { color: 'white' } );//'#ff2e63'
+    csm.setupMaterial( material2 );
+    var geometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
+
+  /*  var s1 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
+    s1.castShadow = true;
+    s1.receiveShadow = false;
+    scene.add( s1 );
+    s1.position.set( 0, 27.5, 0 );
+    s1.scale.z = 5;
+
+    var s2v = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
+    s2v.castShadow = true;
+    s2v.receiveShadow = false;
+    scene.add( s2v );
+    s2v.position.set( 0, 35, 20 );
+    s2v.scale.y = 2.5;
+
+    var s5v = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
+    s5v.castShadow = true;
+    s5v.receiveShadow = false;
+    scene.add( s5v );
+    s5v.position.set( 0, 15, -20 );
+    s5v.scale.y = 2.5;
+
+    var s3 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
+    s3.castShadow = true;
+    s3.receiveShadow = false;
+    scene.add( s3 );
+    s3.position.set( 0, 50, 0 );
+    s3.scale.z = 5;
+
+    var s4 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
+    s4.castShadow = true;
+    s4.receiveShadow = false;
+    scene.add( s4 );
+    s4.position.set( 0, 5, 0 );
+    s4.scale.z = 5;
+
+    var h1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    h1v.castShadow = true;
+    h1v.receiveShadow = false;
+    scene.add( h1v );
+    h1v.position.set( -10, 27.5, -30 );
+    h1v.scale.y = 5.5;
+
+    var h2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    h2v.castShadow = true;
+    h2v.receiveShadow = false;
+    scene.add( h2v );
+    h2v.position.set( -50, 27.5, -30 );
+    h2v.scale.y = 5.5;
+
+    var h3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    h3h.castShadow = true;
+    h3h.receiveShadow = false;
+    scene.add( h3h );
+    h3h.position.set( -30, 27.5, -30 );
+    h3h.scale.x = 5;
+
+    var a1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    a1v.castShadow = true;
+    a1v.receiveShadow = false;
+    scene.add( a1v );
+    a1v.position.set( -65, 27.5, -30 );
+    a1v.scale.y = 5.5;
+
+    var a2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    a2v.castShadow = true;
+    a2v.receiveShadow = false;
+    scene.add( a2v );
+    a2v.position.set( -105, 27.5, -30 );
+    a2v.scale.y = 5.5;
+
+    var a3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    a3h.castShadow = true;
+    a3h.receiveShadow = false;
+    scene.add( a3h );
+    a3h.position.set( -85, 27.5, -30 );
+    a3h.scale.x = 5;
+
+    var a4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    a4h.castShadow = true;
+    a4h.receiveShadow = false;
+    scene.add( a4h );
+    a4h.position.set( -85, 50, -30 );
+    a4h.scale.x = 5;
+
+    var p1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    p1v.castShadow = true;
+    p1v.receiveShadow = false;
+    scene.add( p1v );
+    p1v.position.set( -120, 27.5, -30 );
+    p1v.scale.y = 5.5;
+
+    var p2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    p2v.castShadow = true;
+    p2v.receiveShadow = false;
+    scene.add( p2v );
+    p2v.position.set( -160, 40, -30 );
+    p2v.scale.y = 2;
+
+    var p3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    p3h.castShadow = true;
+    p3h.receiveShadow = false;
+    scene.add( p3h );
+    p3h.position.set( -140, 27.5, -30 );
+    p3h.scale.x = 5;
+
+    var p4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    p4h.castShadow = true;
+    p4h.receiveShadow = false;
+    scene.add( p4h );
+    p4h.position.set( -140, 50, -30 );
+    p4h.scale.x = 5;
+
+    var e1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    e1v.castShadow = true;
+    e1v.receiveShadow = false;
+    scene.add( e1v );
+    e1v.position.set( -175, 27.5, -30 );
+    e1v.scale.y = 5.5;
+
+    var e2h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    e2h.castShadow = true;
+    e2h.receiveShadow = false;
+    scene.add( e2h );
+    e2h.position.set( -195, 27.5, -30 );
+    e2h.scale.x = 5;
+
+    var e3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    e3h.castShadow = true;
+    e3h.receiveShadow = false;
+    scene.add( e3h );
+    e3h.position.set( -195, 50, -30 );
+    e3h.scale.x = 5;
+
+    var e4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
+    e4h.castShadow = true;
+    e4h.receiveShadow = false;
+    scene.add( e4h );
+    e4h.position.set( -195, 5, -30 );
+    e4h.scale.x = 5;*/
+
+    var material = new THREE.MeshStandardMaterial( { roughness: 0 } );
+
+
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.maxPolarAngle = Math.PI * 0.495;
+
+    //#camerapos
+    controls.target.set( -100, 100, -100 );
+    controls.minDistance = 4.0;
+    controls.maxDistance = 2000.0;
+    controls.update();
+
+    //
+
+
+
+    // GUI
+
+
+
+    //
+
+    window.addEventListener( 'resize', onWindowResize, false );
+
+  }
+
+  function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+  }
+
+  function animate() {
+
+    requestAnimationFrame( animate );
+    render();
+
+
+  }
+
+  function render() {
+
+    var time = performance.now() * 0.001;
+
+
+
+    water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
+
+    renderer.render( scene, camera );
+
+  }
+
+</script>-->
+<!-- used for debugging! <script type="text/javascript" src="dump.js"></script>-->
+
+<!-- main container div -->
+<div id="main" style="width:100%;height:100%;display:grid;grid-template: auto / auto;">
+      <!-- base container div contains all the oos seen in the main functionality of the site -->
+
+
+      <div id="background" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;">
+      </div>
+
+      <div id="backgroundoverlay" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;background-color:transparent;">
+      </div>
+
+      <div id="base" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective: 1000px;position:absolute;;left:0px;background-color: white;">
+      </div>
+
+      <div id="meta" style="display:none;width:100%;height:calc(100% - 330px);grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective:1000px;position:relative;left:0px;">
+            <div style="font-size:12px;color:#555;position:relative;top:calc(100vh - 25px);text-align: end;"> </div>
+            <!-- meta container div contains all the oos taht contained the code that run the site. Also used to present the code that is used to serve the code from the server.-->
+            </div>
+
+            <div id="decoration" style="width:100%;height: 290px;grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid white; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;z-index: -50;perspective: 1000px;position: relative;left:-10px;top: calc(100% - 380px);">
+            </div>
+
+            <div id="backgroundlabels" style="position: fixed;width: calc(100vw - 4px);height: 100vh;display: none;grid-template: calc(100vh - 228px) 182px auto /auto;font-size: 20px;font-family: courier;text-align: end;padding-right: 4px;pointer-events:none;">
+                  <div style="color:#81acd6;padding-right: 4px;">IDEAS</div>
+                  <div style="color:#d0eaf1;padding-right: 4px;">FILTERS</div>
+                  <div style="color:#81acd6;padding-right: 4px;">VALUE SIGNALS<br><span style="font-size:10px;">&#169; ooda space ltd</span></div>
+            </div>
+      </div>
+</div>
+
+</body></html>

@@ -1,0 +1,58 @@
+{
+  "name": "oo.computer",
+  "author": "ooda space ltd <lee@ooda.space>",
+  "version": "0.0.38",
+  "description": "",
+  "homepage": "https://oo.computer",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron --trace-warnings .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -p never --win",
+    "publish": "electron-builder -p always"
+  },
+  "build": {
+    "appId": "oo.computer",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "./icon512wb.png"
+    },
+    "linux": {
+      "target": "deb"
+    },
+    "deb": {},
+    "nsis": {
+      "oneClick": true
+    },
+    "asar": true,
+    "files": [
+      "!electron-builder.env"
+    ]
+  },
+  "keywords": [],
+  "license": "OO",
+  "devDependencies": {
+    "@hyperspace/cli": "^1.5.1",
+    "electron": "^12.0.9",
+    "electron-builder": "^22.10.5"
+  },
+  "dependencies": {
+    "@hyperswarm/dht": "next",
+    "cross-blob": "^3.0.0",
+    "electron-log": "^4.3.1",
+    "electron-updater": "^4.3.5",
+    "fetch-blob": "^3.0.1",
+    "hyperdrive": "^10.20.0",
+    "hyperspace": "^3.19.0",
+    "hyperswarm": "^3.0.0-beta2",
+    "ipfs": "^0.57.0",
+    "it-all": "^1.0.5",
+    "node-blob": "0.0.2",
+    "teex": "^1.0.0",
+    "uint8arrays": "^2.1.6"
+  },
+  "productName": "oo.computer"
+}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg"  viewBox="-1 -1 66 66">
+
+      <!--idea icon-->
+      <g transform="rotate(0,32,32) ">
+            <path d="M12.5 12.5  A32 32 45 0 1 51.5 12.5" fill="transparent" stroke="black" stroke-width="2">
+            </path>
+      </g>
+      <g transform="rotate(0,32,32) ">
+            <path d="M12.5 51.5 A32 32 0 0 0 51.5 51.5 " fill="transparent" stroke="black" stroke-width="2">
+            </path>
+      </g>
+
+      <!--context icon-->
+      <g>
+                <circle cx="12.5" cy="32" r="12.5" stroke="black" stroke-width="1" fill="transparent"/>
+      </g>
+
+      <!--prospective context icon-->
+      <g>
+                      <circle cx="51.5" cy="32" r="12.5" stroke="black" stroke-width="1" fill="transparent"/>
+      </g>
+</svg>

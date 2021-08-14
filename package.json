@@ -21,7 +21,8 @@
       "icon": "./icon512wb.png"
     },
     "linux": {
-      "target": "deb"
+      "target": "deb",
+      "icon": "./icon512wb.png"
     },
     "deb": {},
     "nsis": {

@@ -194,12 +194,12 @@ let oodaSpaceSignalSet = {
             $OTHERSIGNALLER : `The ed25519 public key representing oo.computer signal chain (a hypercore) of a signaller other than $SIGNALLER, in hex format`,
             $IDEATREE : `The ed25519 public key representing the signaller's oo.computer idea-value-tree (a hypercore protocol url), in hex format.`,
             $CONTEXT : `A 256bit word represent a context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
-            $CONTEXTOWNER : `The public key of the owner of $CONTEXT as recognised by $SIGNALLER.`,
+            $CONTEXTOWNER : `The public key of the initiator of $CONTEXT as recognised by $SIGNALLER.`,
             $IDEA : `A 256bit word represent a context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
-            $IDEAOWNER : `The public key of the owner of $IDEA as recognised by $SIGNALLER.`,
+            $IDEAOWNER : `The public key of the initiator of $IDEA as recognised by $SIGNALLER.`,
             $DISTANCE : `The distance of the referenced oo. An oo is three interrelated 256bit words with an integer (distance) as defined in the oo.computer system.`,
             $PROSPECTIVECONTEXT : `A 256bit word representing a prospective context in an oo. An oo is three interrelated 256bit words with an integer as defined in the oo.computer system.`,
-            $PROSPECTIVECONTEXTOWNER : `The public key of the owner of $PROSPECTIVECONTEXT as recognised by $SIGNALLER.`,
+            $PROSPECTIVECONTEXTOWNER : `The public key of the initiator of $PROSPECTIVECONTEXT as recognised by $SIGNALLER.`,
             $AMOUNT : `An amount referenced in the signal. Must be a positive number representable in javascript.`,
             $PREVSIGNALHASH : `The hash of the parent signal, as selected by $SIGNALLER`,
             $SIGNALNO : `An integer reference for the signal from $SIGNALLER - typical use is for the sequence number`,
@@ -222,9 +222,11 @@ I will use VALUE signals to indicate the value of digitally encoded ideas in con
 
 hyper://${ideatree}
 
+such that it can be verifiably derived from the above signal chain.
+
 I will use DISCARD signals to indicate that previous value signals, for a given idea in context, should be discarded.
 
-I will use CLAIM and TRANSFER signals to claim ownership of ideas or contexts and to transfer ownership claims to others.
+I will use CLAIM and TRANSFER signals to claim initiation of ideas or contexts and to transfer initiation claims to others.
 
 I will use the INVOICE signals to request value signal payments.
 
@@ -236,13 +238,11 @@ I will use the HACKED signal to indicate that my private keys have been compromi
 
 I give permission for all of my signals to be freely duplicated and stored.
 
-The ooda space signal set is defined in the javascript signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
+The oo.computer signal set is defined in the javascript signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
 
-I will create an oo.computer idea tree with the address 
 
-hyper://${signaller} 
 
-such that it can be verifiably derived from the above signal chain.
+
 
 `
 let signalHash = ''//hash of signal
@@ -259,7 +259,7 @@ let signalHash = ''//hash of signal
                               });
           },
 
-          VALUE: function(signaller='$SIGNALLER',context='$CONTEXT',contextOwner='$CONTEXTOWNER',idea='$IDEA',ideaOwner='$IDEAOWNER',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',prospectiveContextOwner='$PROSPECTIVECONTEXTOWNER',amount='$AMOUNT',currency='$CURRENCY',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          VALUE: function(signaller='$SIGNALLER',context='$CONTEXT',contextInitiator='$CONTEXTOWNER',idea='$IDEA',ideaInitiator='$IDEAOWNER',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',prospectiveContextInitiator='$PROSPECTIVECONTEXTOWNER',amount='$AMOUNT',currency='$CURRENCY',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
 
 let signal =`VALUE:
 
@@ -273,19 +273,19 @@ with a resulting prospectiveContext of: ${prospectivecontext}
 
 I recognise that:
 
-${contextOwner} is the owner of context
-${ideaOwner} is the owner of idea
-${prospectiveContextOwner} is the owner of prospectiveContext
+${contextInitiator} is the initiator of context
+${ideaInitiator} is the initiator of idea
+${prospectiveContextInitiator} is the initiator of prospectiveContext
 
-I will pay the owner* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-I will pay the owner* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-I will pay the owner* of prospectiveContext 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay the initiator* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay the initiator* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+I will pay the initiator* of prospectiveContext 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
 I will pay future value signallers** 0.1 x ${amount} uBTC in ${currency} for faciliation of the payment.
 
-*If I am the owner, then I will instead pay future value signallers** 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-** via the oo.computer ltd profit share system
+*If I am the initiator, then I will instead pay future value signallers** 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+** via the oo.computer profit share system
 
-I will store the data from which the idea is derived (if any) and track its ownership and transfer signals.
+I will store the data from which the idea is derived (if any) and track its initiator claim and transfer signals.
 
 If idea is a value signaller, I will store a copy of their value and discard signals.
 If context is a value signaller, I will store a copy of their value and discard signals that have a context of ${prospectivecontext}.
@@ -405,7 +405,7 @@ I will use these signals to create an oo.computer idea tree at hyper://${ideatre
           CLAIM: function(signaller='$SIGNALLER',word='$WORD',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
           let signal =`CLAIM
 
-I initiate and claim ownership of ${word}.
+I claim initiation of ${word}.
 
           `
           let signalHash = ''//hash of signal
@@ -445,7 +445,7 @@ My private key has been compromised.
           TRANSFER: function(signaller='$SIGNALLER',word='$WORD',otherSignaller='$OTHERSIGNALLER',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
           let signal =`TRANSFER:
 
-I hereby transfer ownership of ${word} to ${otherSignaller}.
+I hereby transfer my initation claim of ${word} to ${otherSignaller}.
 
           `
           let signalHash = ''//hash of signal
@@ -593,7 +593,7 @@ let peers
 let initNeeded = false
 let chunks = [];
 let drive
-let LeeKey = "092ee0aff22a61aaf0bcfd997adae3d8299cb453935e48c7427f5cc7ed48744b" // key for Lee's filter, the default that loads on first visit.
+let LeeKey = "fcf2a690bdd8712196e9bad9722ea848c7223a384f9d765f4e1673a8ab3556c4" // key for Lee's filter, the default that loads on first visit.
 let IdeaValueTree = {}
 let signalChain = {}
 let initSignalChain
@@ -741,7 +741,7 @@ let IPFS = {}
 
 
     console.log('IdeaValueTree exists',IdeaValueTree,IdeaValueTree.key)
-    let ws = new WebSocket('wss://oo.computer/peers')
+    let ws = new WebSocket('wss://ooda.space/peers')
 
     ws.onopen = () => {
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
@@ -791,20 +791,20 @@ let IPFS = {}
   await loadScript("lib/ooSpawner.js")
   await loadScript("lib/ooIconCreator.js")
   //await loadScript("lib/ooWeb3WSManager.js")
-  await loadScript("lib/ooLogSorter.js")
+  //await loadScript("lib/ooLogSorter.js")
   await loadScript("lib/ooFilterCurator.js")
   await loadScript("lib/ooContextCurator.js")
   await loadScript("lib/ooFilter.js")
   await loadScript("lib/ooContextManager.js")
   await loadScript("lib/ooIdea.js")
-  await loadScript("lib/ooLogo.js")
-  await loadScript("lib/ooMetaLogo.js")
+  //await loadScript("lib/ooLogo.js")
+  //await loadScript("lib/ooMetaLogo.js")
   await loadScript("lib/ooInput.js")
   await loadScript("lib/ooFilterInput.js")
   await loadScript("lib/ooFilterMain.js")
-  await loadScript("lib/ooMetaFilterInput.js")
+  //await loadScript("lib/ooMetaFilterInput.js")
   await loadScript("lib/ooPendingTxManager.js")
-  await loadScript("lib/ooContentGetter.js")
+ // await loadScript("lib/ooContentGetter.js")
   await loadScript("lib/ooFilterFiller.js")
   //await loadScript("lib/ooWebWorkerManager.js")
   await loadScript("lib/ooUserComms.js")

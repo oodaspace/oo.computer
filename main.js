@@ -30,6 +30,8 @@ let connection = {}
 signalChainStore = new Corestore('./signalChains')
 ideaTreeStore = new Corestore('./ideaTrees')
 
+IdeaValueTree = new Hyperdrive(ideaTreeStore);
+
 let topicsjoined =[]
 let swarmInit = false
 function isJSON(str) {
@@ -288,6 +290,7 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
   //console.log('init rcd');
     IdeaValueTree = new Hyperdrive(ideaTreeStore);
     IdeaValueTree.on('ready', async () => {
+      IdeaValueTree.writeFile('ready', 'true')
         driveready = true;
         let key = IdeaValueTree.key.toString('hex');
         drivesObj[key] = IdeaValueTree
@@ -298,16 +301,29 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
 })
 
 ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
-  //console.log('exists rcd',IdeaValueTree,d);
-  access("IdeaValueTree", constants.F_OK, (err) => {
-          //console.log(`IdeaValueTree ${err ? 'does not exist' : 'exists'}`);
+  console.log('exists rcd',IdeaValueTree,d);
+ /* access("IdeaValueTree", constants.F_OK, (err) => {
+          console.log(`IdeaValueTree ${err ? 'does not exist' : 'exists'}`);
           if (err){
               win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),false);
           }
           else {
               win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),true);
           }
-  });
+  });*/
+  IdeaValueTree.readFile('ready', 'utf-8',(e,file)=>{
+
+      if (file !== 'true'){
+    console.log(`IdeaValueTree does not exist`)
+    win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),false);
+  }
+  else {
+    console.log(`IdeaValueTree exists`)
+    win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),true);
+  }
+
+  })
+
 
 
 })

@@ -52,7 +52,7 @@
     "electron-builder": "^22.10.5"
   },
   "dependencies": {
-    "@hyperswarm/dht": "next",
+    "@hyperswarm/dht": "5.0.0-rc.5",
     "cross-blob": "^3.0.0",
     "electron-log": "^4.3.1",
     "electron-updater": "^4.3.5",

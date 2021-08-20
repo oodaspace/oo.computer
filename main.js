@@ -428,7 +428,6 @@ ipcMain.on('signalChain:get',async (e,d)=>{
   //console.log('get rcd',d);
   await CoreReady()
   let result = await new Promise(r => signalChain.get(d[1][0],{wait:false},(e,d)=>{if (e){r(false)} else {r(d)}}))
-  //console.log('result',result,result.toString('utf8'))
   win.webContents.send('signalChain:get_response.'+String(d[0]),result.toString('utf8'));
 })
 

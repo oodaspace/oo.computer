@@ -1,7 +1,7 @@
 const { app, BrowserView, BrowserWindow,ipcMain } = require('electron');
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
-const { access, constants } = require( 'fs');
+const  fs  = require( 'fs');
 
 const Swarm = require('hyperswarm')
 let Hyperdrive = require('hyperdrive')
@@ -30,7 +30,8 @@ let connection = {}
 signalChainStore = new Corestore('./signalChains')
 ideaTreeStore = new Corestore('./ideaTrees')
 
-IdeaValueTree = new Hyperdrive(ideaTreeStore);
+
+
 
 let topicsjoined =[]
 let swarmInit = false
@@ -39,10 +40,6 @@ function isJSON(str) {
     return true;
 }
 let seed = crypto.randomBytes(32)
-
-
-let wantedDrives = {}
-
 
 const path = require('path');
 
@@ -287,45 +284,104 @@ ipcMain.on('writeFile',async (e,d)=>{
 })
 
 ipcMain.on('initIdeaValueTree', (e,d)=>{
-  //console.log('init rcd');
-    IdeaValueTree = new Hyperdrive(ideaTreeStore);
-    IdeaValueTree.on('ready', async () => {
-      IdeaValueTree.writeFile('ready', 'true')
-        driveready = true;
-        let key = IdeaValueTree.key.toString('hex');
-        drivesObj[key] = IdeaValueTree
-        //console.log('init drive ready',key);
-        win.webContents.send('initIdeaValueTree_response.'+String(d[0]),key);
-        createSwarmOnReady(key)
-    })
+  console.log('init initIdeaValueTree rcd');
+  //frontend calls this to make sure IdeaValueTree is initialised. Check if it exists and returm the drivekey.
+  let exists = false;
+  fs.stat('ideaValueTreeKey',(err, stats) => {
+    if (err == null){
+      exists = true
+    }
+
+    if (!exists){
+      IdeaValueTree = new Hyperdrive(ideaTreeStore);
+      IdeaValueTree.on('ready', async () => {
+          IdeaValueTree.writeFile('ready', 'true')
+          let key = IdeaValueTree.key.toString('hex');
+          fs.writeFile('ideaValueTreeKey',key,(err) => {
+          if (err) throw err;
+              console.log('Idea Value Tree key has been saved!');
+          })
+          driveready = true;
+          
+          drivesObj[key] = IdeaValueTree
+          //console.log('init drive ready',key);
+          win.webContents.send('initIdeaValueTree_response.'+String(d[0]),key);
+          createSwarmOnReady(key)
+      })
+
+    }
+    else {
+        fs.readFile('ideaValueTreeKey','utf8',(err,key)=>{
+              if (err) throw err;
+              console.log('making IdeaValueTree from existing key',key)
+              IdeaValueTree = new Hyperdrive(ideaTreeStore,Buffer.from(key,'hex'));
+              IdeaValueTree.on('ready', async () => {
+                            IdeaValueTree.writeFile('ready', 'true')
+                                let key = IdeaValueTree.key.toString('hex');
+                                fs.writeFile('ideaValueTreeKey',key,(err) => {
+                                if (err) throw err;
+                                    console.log('Idea Value Tree key has been saved!');
+                                })
+                              driveready = true;
+                              
+                              drivesObj[key] = IdeaValueTree
+                              //console.log('init drive ready',key);
+                              win.webContents.send('initIdeaValueTree_response.'+String(d[0]),key);
+                              createSwarmOnReady(key)
+              })
+        })
+    }
+  })
 })
 
 ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
   console.log('exists rcd',IdeaValueTree,d);
- /* access("IdeaValueTree", constants.F_OK, (err) => {
-          console.log(`IdeaValueTree ${err ? 'does not exist' : 'exists'}`);
-          if (err){
+  // called for front end to check if an IdeaValueTree has previously been created. If it has a file called ideaValueTreeKey will exist. Sends a response to say whether it does (so front end can arrange for INIT signal).
+
+  fs.stat('ideaValueTreeKey',(err, stats) => {
+      if (err == null){
+        exists = true
+      }
+      if (!exists){
+          console.log(`IdeaValueTree does not exist`)
+          IdeaValueTree = new Hyperdrive(ideaTreeStore);
+          //ready function is repeated could be collected.
+          IdeaValueTree.on('ready', async () => {
+              IdeaValueTree.writeFile('ready', 'true')
+              let key = IdeaValueTree.key.toString('hex');
+              fs.writeFile('ideaValueTreeKey',key,(err) => {
+              if (err) throw err;
+                  console.log('Idea Value Tree key has been saved!');
+              })
+              driveready = true;
+              drivesObj[key] = IdeaValueTree
+              //console.log('init drive ready',key);
               win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),false);
-          }
-          else {
-              win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),true);
-          }
-  });*/
-  IdeaValueTree.readFile('ready', 'utf-8',(e,file)=>{
+        })
 
-      if (file !== 'true'){
-    console.log(`IdeaValueTree does not exist`)
-    win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),false);
-  }
-  else {
-    console.log(`IdeaValueTree exists`)
-    win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),true);
-  }
-
+    }
+    else {
+        console.log(`IdeaValueTree exists`)
+        fs.readFile('ideaValueTreeKey','utf8',(err,key)=>{
+              if (err) throw err;
+              console.log('making IdeaValueTree from existing key',key)
+              IdeaValueTree = new Hyperdrive(ideaTreeStore,Buffer.from(key,'hex'));
+                  IdeaValueTree.on('ready', async () => {
+                                IdeaValueTree.writeFile('ready', 'true')
+                                let key = IdeaValueTree.key.toString('hex');
+                                fs.writeFile('ideaValueTreeKey',key,(err) => {
+                                if (err) throw err;
+                                    console.log('Idea Value Tree key has been saved!');
+                                })
+                                driveready = true;
+                                drivesObj[key] = IdeaValueTree
+                                //console.log('init drive ready',key);
+                                win.webContents.send('IdeaValueTree:exists_response.'+String(d[0]),true);
+                                  
+                  })
+        })
+    }
   })
-
-
-
 })
 
 ipcMain.on('initSignalChain',async (e,d)=>{

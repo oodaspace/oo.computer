@@ -337,7 +337,7 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
 ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
   console.log('exists rcd',IdeaValueTree,d);
   // called for front end to check if an IdeaValueTree has previously been created. If it has a file called ideaValueTreeKey will exist. Sends a response to say whether it does (so front end can arrange for INIT signal).
-
+  let exists = false;
   fs.stat('ideaValueTreeKey',(err, stats) => {
       if (err == null){
         exists = true

@@ -26,9 +26,10 @@ let coresObj = {} //tracks already initiated cores
 let getDriveTimer
 let signallerObj = {} // index by signaller signal chain key. 
 let connection = {}
+const userDataPath = app.getPath('userData');
 
-signalChainStore = new Corestore('./signalChains')
-ideaTreeStore = new Corestore('./ideaTrees')
+signalChainStore = new Corestore(userDataPath + '/signalChains')
+ideaTreeStore = new Corestore(userDataPath + '/ideaTrees')
 
 
 
@@ -287,7 +288,7 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
   console.log('init initIdeaValueTree rcd');
   //frontend calls this to make sure IdeaValueTree is initialised. Check if it exists and returm the drivekey.
   let exists = false;
-  fs.stat('ideaValueTreeKey',(err, stats) => {
+  fs.stat(userDataPath + '/ideaValueTreeKey',(err, stats) => {
     if (err == null){
       exists = true
     }
@@ -297,7 +298,7 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
       IdeaValueTree.on('ready', async () => {
           IdeaValueTree.writeFile('ready', 'true')
           let key = IdeaValueTree.key.toString('hex');
-          fs.writeFile('ideaValueTreeKey',key,(err) => {
+          fs.writeFile(userDataPath + '/ideaValueTreeKey',key,(err) => {
           if (err) throw err;
               console.log('Idea Value Tree key has been saved!');
           })
@@ -311,14 +312,14 @@ ipcMain.on('initIdeaValueTree', (e,d)=>{
 
     }
     else {
-        fs.readFile('ideaValueTreeKey','utf8',(err,key)=>{
+        fs.readFile(userDataPath + '/ideaValueTreeKey','utf8',(err,key)=>{
               if (err) throw err;
               console.log('making IdeaValueTree from existing key',key)
               IdeaValueTree = new Hyperdrive(ideaTreeStore,Buffer.from(key,'hex'));
               IdeaValueTree.on('ready', async () => {
                             IdeaValueTree.writeFile('ready', 'true')
                                 let key = IdeaValueTree.key.toString('hex');
-                                fs.writeFile('ideaValueTreeKey',key,(err) => {
+                                fs.writeFile(userDataPath + '/ideaValueTreeKey',key,(err) => {
                                 if (err) throw err;
                                     console.log('Idea Value Tree key has been saved!');
                                 })
@@ -338,7 +339,7 @@ ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
   console.log('exists rcd',IdeaValueTree,d);
   // called for front end to check if an IdeaValueTree has previously been created. If it has a file called ideaValueTreeKey will exist. Sends a response to say whether it does (so front end can arrange for INIT signal).
   let exists = false;
-  fs.stat('ideaValueTreeKey',(err, stats) => {
+  fs.stat(userDataPath + '/ideaValueTreeKey',(err, stats) => {
       if (err == null){
         exists = true
       }
@@ -349,7 +350,7 @@ ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
           IdeaValueTree.on('ready', async () => {
               IdeaValueTree.writeFile('ready', 'true')
               let key = IdeaValueTree.key.toString('hex');
-              fs.writeFile('ideaValueTreeKey',key,(err) => {
+              fs.writeFile(userDataPath + '/ideaValueTreeKey',key,(err) => {
               if (err) throw err;
                   console.log('Idea Value Tree key has been saved!');
               })
@@ -362,14 +363,14 @@ ipcMain.on('IdeaValueTree:exists',async (e,d)=>{
     }
     else {
         console.log(`IdeaValueTree exists`)
-        fs.readFile('ideaValueTreeKey','utf8',(err,key)=>{
+        fs.readFile(userDataPath + '/ideaValueTreeKey','utf8',(err,key)=>{
               if (err) throw err;
               console.log('making IdeaValueTree from existing key',key)
               IdeaValueTree = new Hyperdrive(ideaTreeStore,Buffer.from(key,'hex'));
                   IdeaValueTree.on('ready', async () => {
                                 IdeaValueTree.writeFile('ready', 'true')
                                 let key = IdeaValueTree.key.toString('hex');
-                                fs.writeFile('ideaValueTreeKey',key,(err) => {
+                                fs.writeFile(userDataPath + '/ideaValueTreeKey',key,(err) => {
                                 if (err) throw err;
                                     console.log('Idea Value Tree key has been saved!');
                                 })

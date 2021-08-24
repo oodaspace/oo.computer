@@ -80,7 +80,7 @@ E. Instructions for signalling value
 
 
 <script id="init">
-	//console.log('EDRIVE?????',edrive)
+
 
 let IdeaValueTreeIndex =0
 let signalChainIndex =0
@@ -164,24 +164,17 @@ if (!String.prototype.replaceAll)
 async function signSignal(signal,jwk){
 
 //  signal.PROSPECTIVECONTEXT = XORcontextidea(signal.CONTEXT,signal.IDEA,signal.DISTANCE)
-  let enc = new TextEncoder();
-  let msg = enc.encode(signal.SIGNAL)
-
-          signature= await crypto.subtle.sign(    {name: "ECDSA",
-              hash: {name: "SHA-384"},},keyPair.privateKey,msg)
-
-              buffer = new Uint8Array(signature);
-
-
-          signat = ToBase64(buffer);//btoa(buffer)//buffer.reduce((prev,pres)=>{return prev.toString(16)+pres.toString(16)})
-            console.log('signature',signature,signat)
-
-            let hash = await sha256(msg)
-
-          signal.SIGNATURE = signat
-          signal.SIGNALHASH = hash
-
-          return signal
+    let enc = new TextEncoder();
+    let msg = enc.encode(signal.SIGNAL)
+    signature= await crypto.subtle.sign(    {name: "ECDSA",
+    hash: {name: "SHA-384"},},keyPair.privateKey,msg)
+    buffer = new Uint8Array(signature);
+    signat = ToBase64(buffer);//btoa(buffer)//buffer.reduce((prev,pres)=>{return prev.toString(16)+pres.toString(16)})
+    console.log('signature',signature,signat)
+    let hash = await sha256(msg)
+    signal.SIGNATURE = signat
+    signal.SIGNALHASH = hash
+    return signal
 }
 
 
@@ -603,7 +596,7 @@ let IPFS = {}
 ;(async function(){
 
 
-    window.api.receive("console_message",(msg)=>{console.log('MSG: ',msg)})
+  window.api.receive("console_message",(msg)=>{console.log('MSG: ',msg)})
 
   await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
   console.log('dom loaded')
@@ -646,8 +639,6 @@ let IPFS = {}
     	})
       IdeaValueTree.key = await initIdeaValueTree()
       //}
-
-
 
 	IdeaValueTree.readdir =  drivekey => new Promise(r => {
 		let path = '/'
@@ -703,30 +694,11 @@ let IPFS = {}
         })
     })
 
-
-
-
   data = await signalChain.get(0,{wait:false}).then((r)=>{console.log('get r initNeeded?',r)}).catch((e)=>{//**
     console.log('get error initNeeded?',e)
   initNeeded = true})
 
-  /*try{
-
-      IdeaValueTree = await hypersdk.Hyperdrive('IdeaValueTree')
-      await IdeaValueTree.ready()
-  }
-  catch(e) {
-    console.log('already there1',e)
-  }*/
- /* try{
-  signalChain = await hypersdk.Hypercore('signalChain')
-
-}
-  catch(e) {
-    console.log('already there2',e)
-  }*/
-
-//**})
+ 
 
   keyPair = await window.crypto.subtle.generateKey(
   {
@@ -741,7 +713,7 @@ let IPFS = {}
 
 
     console.log('IdeaValueTree exists',IdeaValueTree,IdeaValueTree.key)
-    let ws = new WebSocket('wss://ooda.space/peers')
+  /*  let ws = new WebSocket('wss://ooda.space/peers')
 
     ws.onopen = () => {
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
@@ -758,7 +730,7 @@ let IPFS = {}
         }
 
       }
-    }
+    }*/
     /*while (IdeaValueTree.key == null) {
       kash = '0x' + IdeaValueTree.key //await sha256(JSON.stringify(k))
     }*/
@@ -790,23 +762,16 @@ let IPFS = {}
 
   await loadScript("lib/ooSpawner.js")
   await loadScript("lib/ooIconCreator.js")
-  //await loadScript("lib/ooWeb3WSManager.js")
-  //await loadScript("lib/ooLogSorter.js")
   await loadScript("lib/ooFilterCurator.js")
   await loadScript("lib/ooContextCurator.js")
   await loadScript("lib/ooFilter.js")
   await loadScript("lib/ooContextManager.js")
   await loadScript("lib/ooIdea.js")
-  //await loadScript("lib/ooLogo.js")
-  //await loadScript("lib/ooMetaLogo.js")
   await loadScript("lib/ooInput.js")
   await loadScript("lib/ooFilterInput.js")
   await loadScript("lib/ooFilterMain.js")
-  //await loadScript("lib/ooMetaFilterInput.js")
   await loadScript("lib/ooPendingTxManager.js")
- // await loadScript("lib/ooContentGetter.js")
   await loadScript("lib/ooFilterFiller.js")
-  //await loadScript("lib/ooWebWorkerManager.js")
   await loadScript("lib/ooUserComms.js")
   await loadScript("lib/ooHyperManager.js")
   await loadScript("lib/ooBaseTemplate.js")
@@ -866,360 +831,6 @@ window.addEventListener('wheel', (e) => {
 
 
 </script>
-<!--
-<script type="module">
-
-  // Find the latest version by visiting https://unpkg.com/three. The URL will
-  // redirect to the newest stable release.
-
-
-
-
-  import * as THREE from './build/three.module.js';
-
-  import Stats from './lib/jsm/libs/stats.module.js';
-
-  import { GUI } from './lib/jsm/libs/dat.gui.module.js';
-  import { OrbitControls } from './lib/jsm/controls/OrbitControls.js';
-  import { Water } from './lib/jsm/objects/Water.js';
-  import { Sky } from './lib/jsm/objects/Sky.js';
-  import { CSM } from './lib/jsm/csm/CSM.js';
-  import { CSMHelper } from './lib/jsm/csm/CSMHelper.js';
-
-  var container, stats;
-  var camera, scene, renderer,csm, csmHelper;
-  var controls, water, sun, mesh;
-
-  init();
-  animate();
-
-  function init() {
-
-    container = document.getElementById( 'background' );
-
-    //
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( document.getElementById('background').getBoundingClientRect().width, document.getElementById('background').getBoundingClientRect().height );
-    container.appendChild( renderer.domElement );
-
-    //
-
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 10, 200000 );
-    camera.position.set( 300, 100, -400 );
-//#camerapos
-
-  //
-
-    sun = new THREE.Vector3();
-
-    // Water
-
-    var waterGeometry = new THREE.PlaneBufferGeometry( 10000, 10000 );
-
-    water = new Water(
-      waterGeometry,
-      {
-        textureWidth: 512,
-        textureHeight: 512,
-        waterNormals: new THREE.TextureLoader().load( 'textures/waternormals.jpg', function ( texture ) {
-
-          texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-
-        } ),
-        alpha: 1.0,
-        sunDirection: new THREE.Vector3(),
-        sunColor: 0xffffff,
-        waterColor: 0x001e0f,
-        distortionScale: 3.7,
-        fog: scene.fog !== undefined
-      }
-    );
-
-    water.rotation.x = - Math.PI / 2;
-
-    scene.add( water );
-
-    // Skybox
-
-    var sky = new Sky();
-    sky.scale.setScalar( 100000 );
-    scene.add( sky );
-
-    var ambientLight = new THREE.AmbientLight( 0xcccccc );
-				scene.add( ambientLight );
-
-    var uniforms = sky.material.uniforms;
-
-    uniforms[ 'turbidity' ].value = 9;
-    uniforms[ 'rayleigh' ].value = 2.2;
-    uniforms[ 'mieCoefficient' ].value = 0.005;
-    uniforms[ 'mieDirectionalG' ].value = 0.8;
-
-    var parameters = {
-      inclination: 0.5,
-      azimuth: 0.9417
-    };
-
-    var pmremGenerator = new THREE.PMREMGenerator( renderer );
-
-    function updateSun() {
-
-      var theta = Math.PI * ( parameters.inclination - 0.5 );
-      var phi = 2 * Math.PI * ( parameters.azimuth - 0.5 );
-
-      sun.x = Math.cos( phi );
-      sun.y = Math.sin( phi ) * Math.sin( theta );
-      sun.z = Math.sin( phi ) * Math.cos( theta );
-
-      sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
-      water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
-
-      scene.environment = pmremGenerator.fromScene( sky ).texture;
-
-    }
-
-    updateSun();
-
-    //
-    var params = {
-      orthographic: true,
-      fade: false,
-      far: 1000000000000000,
-      mode: 'practical',
-      lightX: - 1,
-      lightY: - 1,
-      lightZ: - 1,
-      margin: 100,
-      lightFar: 10000000000000000,
-      lightNear: 1,
-      autoUpdateHelper: true,
-      updateHelper: function () {
-
-        csmHelper.update();
-
-      }
-    };
-    csm = new CSM({
-      maxFar: params.far,
-      cascades: 4,
-      mode: params.mode,
-      parent: scene,
-      shadowMapSize: 1024,
-      lightDirection: new THREE.Vector3( params.lightX, params.lightY, params.lightZ ).normalize(),
-      camera: camera
-    } );
-
-    csmHelper = new CSMHelper( csm );
-    csmHelper.visible = true;
-    //scene.add( csmHelper );
-    var material1 = new THREE.MeshPhongMaterial( { color: 'black' } );
-    csm.setupMaterial( material1 );
-
-    var material2 = new THREE.MeshPhongMaterial( { color: 'white' } );//'#ff2e63'
-    csm.setupMaterial( material2 );
-    var geometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
-
-  /*  var s1 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
-    s1.castShadow = true;
-    s1.receiveShadow = false;
-    scene.add( s1 );
-    s1.position.set( 0, 27.5, 0 );
-    s1.scale.z = 5;
-
-    var s2v = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
-    s2v.castShadow = true;
-    s2v.receiveShadow = false;
-    scene.add( s2v );
-    s2v.position.set( 0, 35, 20 );
-    s2v.scale.y = 2.5;
-
-    var s5v = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
-    s5v.castShadow = true;
-    s5v.receiveShadow = false;
-    scene.add( s5v );
-    s5v.position.set( 0, 15, -20 );
-    s5v.scale.y = 2.5;
-
-    var s3 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
-    s3.castShadow = true;
-    s3.receiveShadow = false;
-    scene.add( s3 );
-    s3.position.set( 0, 50, 0 );
-    s3.scale.z = 5;
-
-    var s4 = new THREE.Mesh( geometry,  [material1,material2,material2,material2,material2,material2,material2]  );
-    s4.castShadow = true;
-    s4.receiveShadow = false;
-    scene.add( s4 );
-    s4.position.set( 0, 5, 0 );
-    s4.scale.z = 5;
-
-    var h1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    h1v.castShadow = true;
-    h1v.receiveShadow = false;
-    scene.add( h1v );
-    h1v.position.set( -10, 27.5, -30 );
-    h1v.scale.y = 5.5;
-
-    var h2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    h2v.castShadow = true;
-    h2v.receiveShadow = false;
-    scene.add( h2v );
-    h2v.position.set( -50, 27.5, -30 );
-    h2v.scale.y = 5.5;
-
-    var h3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    h3h.castShadow = true;
-    h3h.receiveShadow = false;
-    scene.add( h3h );
-    h3h.position.set( -30, 27.5, -30 );
-    h3h.scale.x = 5;
-
-    var a1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    a1v.castShadow = true;
-    a1v.receiveShadow = false;
-    scene.add( a1v );
-    a1v.position.set( -65, 27.5, -30 );
-    a1v.scale.y = 5.5;
-
-    var a2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    a2v.castShadow = true;
-    a2v.receiveShadow = false;
-    scene.add( a2v );
-    a2v.position.set( -105, 27.5, -30 );
-    a2v.scale.y = 5.5;
-
-    var a3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    a3h.castShadow = true;
-    a3h.receiveShadow = false;
-    scene.add( a3h );
-    a3h.position.set( -85, 27.5, -30 );
-    a3h.scale.x = 5;
-
-    var a4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    a4h.castShadow = true;
-    a4h.receiveShadow = false;
-    scene.add( a4h );
-    a4h.position.set( -85, 50, -30 );
-    a4h.scale.x = 5;
-
-    var p1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    p1v.castShadow = true;
-    p1v.receiveShadow = false;
-    scene.add( p1v );
-    p1v.position.set( -120, 27.5, -30 );
-    p1v.scale.y = 5.5;
-
-    var p2v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    p2v.castShadow = true;
-    p2v.receiveShadow = false;
-    scene.add( p2v );
-    p2v.position.set( -160, 40, -30 );
-    p2v.scale.y = 2;
-
-    var p3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    p3h.castShadow = true;
-    p3h.receiveShadow = false;
-    scene.add( p3h );
-    p3h.position.set( -140, 27.5, -30 );
-    p3h.scale.x = 5;
-
-    var p4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    p4h.castShadow = true;
-    p4h.receiveShadow = false;
-    scene.add( p4h );
-    p4h.position.set( -140, 50, -30 );
-    p4h.scale.x = 5;
-
-    var e1v = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    e1v.castShadow = true;
-    e1v.receiveShadow = false;
-    scene.add( e1v );
-    e1v.position.set( -175, 27.5, -30 );
-    e1v.scale.y = 5.5;
-
-    var e2h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    e2h.castShadow = true;
-    e2h.receiveShadow = false;
-    scene.add( e2h );
-    e2h.position.set( -195, 27.5, -30 );
-    e2h.scale.x = 5;
-
-    var e3h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    e3h.castShadow = true;
-    e3h.receiveShadow = false;
-    scene.add( e3h );
-    e3h.position.set( -195, 50, -30 );
-    e3h.scale.x = 5;
-
-    var e4h = new THREE.Mesh( geometry,  [material2,material2,material2,material2,material2,material1,material2]  );
-    e4h.castShadow = true;
-    e4h.receiveShadow = false;
-    scene.add( e4h );
-    e4h.position.set( -195, 5, -30 );
-    e4h.scale.x = 5;*/
-
-    var material = new THREE.MeshStandardMaterial( { roughness: 0 } );
-
-
-    controls = new OrbitControls( camera, renderer.domElement );
-    controls.maxPolarAngle = Math.PI * 0.495;
-
-    //#camerapos
-    controls.target.set( -100, 100, -100 );
-    controls.minDistance = 4.0;
-    controls.maxDistance = 2000.0;
-    controls.update();
-
-    //
-
-
-
-    // GUI
-
-
-
-    //
-
-    window.addEventListener( 'resize', onWindowResize, false );
-
-  }
-
-  function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-
-  }
-
-  function animate() {
-
-    requestAnimationFrame( animate );
-    render();
-
-
-  }
-
-  function render() {
-
-    var time = performance.now() * 0.001;
-
-
-
-    water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
-
-    renderer.render( scene, camera );
-
-  }
-
-</script>-->
-<!-- used for debugging! <script type="text/javascript" src="dump.js"></script>-->
 
 <!-- main container div -->
 <div id="main" style="width:100%;height:100%;display:grid;grid-template: auto / auto;">

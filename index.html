@@ -582,7 +582,7 @@ let metathisooManagersprospective//'0x111111111111111111111111111111111111111111
 let metaoodistance = 1
 let txtToOOId
 let txtToOOhk
-let peers
+let peers = []
 let initNeeded = false
 let chunks = [];
 let drive
@@ -713,7 +713,7 @@ let IPFS = {}
 
 
     console.log('IdeaValueTree exists',IdeaValueTree,IdeaValueTree.key)
-  /*  let ws = new WebSocket('wss://ooda.space/peers')
+    let ws = new WebSocket('wss://ooda.space/peers')
 
     ws.onopen = () => {
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
@@ -730,7 +730,7 @@ let IPFS = {}
         }
 
       }
-    }*/
+    }
     /*while (IdeaValueTree.key == null) {
       kash = '0x' + IdeaValueTree.key //await sha256(JSON.stringify(k))
     }*/

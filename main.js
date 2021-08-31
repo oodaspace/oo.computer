@@ -2,6 +2,7 @@ const { app, BrowserView, BrowserWindow,ipcMain } = require('electron');
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const  fs  = require( 'fs');
+var pump = require('pump');
 
 const Swarm = require('hyperswarm')
 let Hyperdrive = require('hyperdrive')
@@ -70,20 +71,25 @@ async function createSwarmOnReady(key){
           let seed = crypto.randomBytes(32)
           let swarm = new Swarm({ seed: seed})
           let discovery = swarm.join(Buffer.from(key,'hex'),{server:true,client:true,announce:true,lookup:true},()=>{console.log('joined')})
-          swarm.on('peer',(peer) => {console.log('connected to peer',peer)} )
+          swarm.on('peer',(peer) => {win.webContents.send('console_message', 'connected to peer ' + JSON.stringify(peer));console.log('connected to peer',peer)} )
           swarm.on('peer-rejected',(peer) => {console.log('rejected peer',peer)} )
           swarm.on('updated', (key) => {console.log('swarm updated',key)})
           swarm.on('disconnection', (skt,info) => {console.log('A connection has been dropped',info)})
 
           console.log('swarm joined', key)
+          win.webContents.send('console_message', 'swarm joined: '+ key)
           await discovery.flushed()
           console.log('discovery flushed', key)
 
           swarm.on('connection', async function (connection, info) {
-                connection.pipe(drivesObj[key].replicate(connection.isInitiator)).pipe(connection)
-               // console.log('connection',Object.keys(connection))
+                //connection.pipe(drivesObj[key].replicate(connection.isInitiator)).pipe(connection)
+                pump(connection,drivesObj[key].replicate(connection.isInitiator), function(err) {
+                    win.webContents.send('console_message', 'Connection error, pipe finished: ' + JSON.stringify(err))
+                })
+                win.webContents.send('console_message', 'got swarm connection: '+ JSON.stringify(info))
+                // console.log('connection',Object.keys(connection))
                 //connection.write('testing connection')
-                connection.on('error', err => console.log('2 CONN ERR:', err))
+                //connection.on('error', err => win.webContents.send('console_message', 'Connection error' + JSON.stringify(err)))
                 drivesObj[key].replicate(connection.isInitiator).on('error', err => console.log('replication stream error:', err))
                 connection.on('data',(data) => { console.log('topic:',info.topics,'got data: ',data.toString())})
 

@@ -84,6 +84,7 @@ async function createSwarmOnReady(key){
                // console.log('connection',Object.keys(connection))
                 //connection.write('testing connection')
                 connection.on('error', err => console.log('2 CONN ERR:', err))
+                drivesObj[key].replicate(connection.isInitiator).on('error', err => console.log('replication stream error:', err))
                 connection.on('data',(data) => { console.log('topic:',info.topics,'got data: ',data.toString())})
 
           })

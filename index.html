@@ -170,7 +170,7 @@ async function signSignal(signal,jwk){
     hash: {name: "SHA-384"},},keyPair.privateKey,msg)
     buffer = new Uint8Array(signature);
     signat = ToBase64(buffer);//btoa(buffer)//buffer.reduce((prev,pres)=>{return prev.toString(16)+pres.toString(16)})
-    console.log('signature',signature,signat)
+    //console.log('signature',signature,signat)
     let hash = await sha256(msg)
     signal.SIGNATURE = signat
     signal.SIGNALHASH = hash
@@ -719,7 +719,6 @@ let IPFS = {}
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"peers","params":{}}))
       ws.onmessage = (m) => {
-        console.log('message22',m,JSON.parse(m.data))
         let msg = JSON.parse(m.data)
         switch (msg.id) {
           case 'peers':

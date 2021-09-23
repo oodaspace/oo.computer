@@ -188,6 +188,7 @@ server.on('listening', async function () {
 })
 server.listen(keyPair)
 
+let nodesarray = []
 async function lookupSignalChain(key){
     let lookupstream = node.lookup(Buffer.from(key,'hex'))
     let SignalChain = signalChainBee.sub(key)

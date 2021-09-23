@@ -199,9 +199,9 @@ async function lookupSignalChain(key){
     }*/
     console.log('looking up',key.toString('hex'))
     for await (const res of lookupstream) {
-    console.log('got res of lookupstream',res)
+    //console.log('got res of lookupstream',res)
       res.peers.forEach(peer => {
-           console.log(' ********** got peer from lookup',peer.publicKey)
+           //console.log(' ********** got peer from lookup',peer.publicKey)
           if (!(nodesarray.includes(peer.publicKey.toString('hex')))) {
               console.log(' got new peer',peer,peer.publicKey == keyPair.publicKey)
               nodesarray.push(peer.publicKey.toString('hex'));

@@ -38,7 +38,8 @@ const userDataPath = app.getPath('userData');
 
 let signalChainStore = userDataPath + '/signalChains'
 let ideaTreeStore = userDataPath + '/ideaTree'
-let mediaStore = userDataPath + '/mediaStore'
+let mediaStore = userDataPath + '/media'
+let contentTypeStore = userDataPath + '/contentTypes'
 let keyStore = userDataPath + '/keyStore'
 let privateKey
 let publicKey
@@ -75,14 +76,14 @@ IdeaTreeCore.ready(()=>{
     valueEncoding: 'binary'
   })
 })
-let MediaCore = new Hypercore('/media')
+let MediaCore = new Hypercore(mediaStore)
 MediaCore.ready(()=>{
   MediaBee = new Hyperbee(MediaCore,{
     keyEncoding: 'utf-8',
     valueEncoding: 'binary'
   })
 })
-let ContentTypeCore = new Hypercore('/contentTypes')
+let ContentTypeCore = new Hypercore(contentTypeStore)
 ContentTypeCore.ready(()=>{
   ContentTypeBee = new Hyperbee(ContentTypeCore,{
     keyEncoding: 'utf-8',

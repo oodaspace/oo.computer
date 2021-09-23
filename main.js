@@ -197,7 +197,7 @@ async function lookupSignalChain(key){
         signalChains[key.toString('hex')] = {}
 
     }*/
-    console.log('looking up',key)
+    console.log('looking up',key.toString('hex'))
     for await (const res of lookupstream) {
     console.log('got res of lookupstream',res)
       res.peers.forEach(peer => {
@@ -207,7 +207,8 @@ async function lookupSignalChain(key){
               nodesarray.push(peer.publicKey.toString('hex'));
               let skt = node.connect(peer.publicKey)
               //process.stdin.pipe(skt).pipe(process.stdout)
-              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : ${'0x' + key}}`)//, "endSeq" : ${1}
+              console.log('wrting request',key)
+              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : ${'0x' + key.toString('hex')}}`)//, "endSeq" : ${1}
               skt.on('data',async (d)=>{
                 console.log('node2 got msg',d)
                 let msg = JSON.parse(d)

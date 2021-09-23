@@ -80,9 +80,9 @@ E. Instructions for signalling value
 
 
 <script id="init">
-
-
-let IdeaValueTreeIndex =0
+let mainKey
+let msgIndex = 0
+/*let IdeaValueTreeIndex =0
 let signalChainIndex =0
 async function IdeaValueTreeExists(){
     
@@ -98,8 +98,8 @@ async function IdeaValueTreeExists(){
             })
     })
     
-}
-
+}*/
+/*
 class HyperDrive {
     
     constructor(key){
@@ -150,7 +150,7 @@ class HyperDrive {
         })
     }
 }
-
+*/
 	
 
 // add string replaceAll polyfill
@@ -207,15 +207,11 @@ let oodaSpaceSignalSet = {
           INIT: function(signaller='$SIGNALLER',signalsetversion='$SIGNALSETVERSION',ideatree='$IDEATREE') {
             let signal =`INIT:
 
-I will create an oo.computer signal chain using the oo.computer signal set on the hypercore with address 
+I am ed25519 public key ${signaller}
 
-hyper://${signaller}.
+I will create an oo.computer signal sequence composed of signed signals as follows:
 
-I will use VALUE signals to indicate the value of digitally encoded ideas in contexts. I will use these to create an oo.computer idea tree at 
-
-hyper://${ideatree}
-
-such that it can be verifiably derived from the above signal chain.
+I will use VALUE signals to indicate the value of digitally encoded ideas in contexts. 
 
 I will use DISCARD signals to indicate that previous value signals, for a given idea in context, should be discarded.
 
@@ -231,7 +227,9 @@ I will use the HACKED signal to indicate that my private keys have been compromi
 
 I give permission for all of my signals to be freely duplicated and stored.
 
-The oo.computer signal set is defined in the javascript signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
+I will share my signal sequence via a hypercore protocol hyperswarm via the oo.computer app, using ${signaller} as the lookup topic.
+
+An oo.computer signal sequence consists of signals from the oo.computer signal set. The oo.computer signal set is the javascript signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
 
 
 
@@ -568,14 +566,15 @@ let mm = function(){
                        } // end of message batch [while(this[name].msgq_from.length>0)]
                   } // end of infinite loop [while(true)]
       }// end of message listener definition
-
+console.log('this.msgListener',this.msgListener)
 }; // end of mm definition
+
 
 // create the global message manager object
 msgMan = new mm;
 
 
-/*Thesee vars and utility functions locate the oos used to create the site */
+/*These vars and utility functions locate the oos used to create the site */
 
 let metatthisprospective
 let metathisooManagersprospective//'0x1111111111111111111111111111111111111111111111111111111111111' //XORcontextidea(metatthisprospective,hexifyString('oo'),1)
@@ -604,11 +603,21 @@ let IPFS = {}
   await loadScript("lib/biginteger.min.js")
   await loadScript("lib/util_web3v2.js")
   await loadScript("lib/jdenticon.min.js")
-  await loadScript("lib/purify.min.js")
+  await loadScript("lib/purify.min.js");
+
   //hypersdk = await window.hyperSDK({swarmOpts:{preferredPort:42420,wsProxy:'wss://oo.computer/proxy'}});//,webrtcBootstrap:'https://109.123.82.242/proxy'
 
-    
-    let IPFSIndex = 0
+    console.log('ins init needed? ',initNeeded)
+   // new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(1),(result)=>{console.log('got initNeeded?',result);r(result);})}).then(r => initNeeded = r)
+window.api.send('SignalChain:isInit'+'.'+String(1))
+
+initNeeded = await new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(1),(result)=>{r(result)})})
+initNeeded = !initNeeded
+console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+String(1),window.api.receive)
+
+console.log('ins init needed? 3',initNeeded)
+
+    /*let IPFSIndex = 0
     IPFS.add =  data => new Promise(r => {
     console.log('ipfs adding',data)
         IPFSIndex++
@@ -697,9 +706,21 @@ let IPFS = {}
   data = await signalChain.get(0,{wait:false}).then((r)=>{console.log('get r initNeeded?',r)}).catch((e)=>{//**
     console.log('get error initNeeded?',e)
   initNeeded = true})
-
+*/
  
+    
 
+      let getMainKey =  () => new Promise(async r => {
+
+            window.api.send('getMainKey'+'.'+String(msgIndex),[])
+            window.api.receive('getMainKey_response'+'.'+String(msgIndex),(result)=>{
+                r(result)
+            })
+        })
+      console.log('about to get mainkey')
+      mainKey = await getMainKey()
+      console.log('mainkey=',mainKey)
+    
   keyPair = await window.crypto.subtle.generateKey(
   {
     name: "ECDSA",
@@ -708,15 +729,16 @@ let IPFS = {}
   true,
   ["sign", "verify"]
   );
+
   k = await crypto.subtle.exportKey('jwk',keyPair.publicKey)
   kash = await sha256(JSON.stringify(k))
 
 
-    console.log('IdeaValueTree exists',IdeaValueTree,IdeaValueTree.key)
+    console.log('IdeaValueTree exists',IdeaValueTree,mainKey)
     let ws = new WebSocket('wss://ooda.space/peers')
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+IdeaValueTree.key}}))     //{key:}))
+      ws.send(JSON.stringify({"jsonrpc":"2.0","method":"key","params":{"key":'hyper://'+mainKey}}))     //{key:}))
       ws.send(JSON.stringify({"jsonrpc":"2.0","method":"peers","params":{}}))
       ws.onmessage = (m) => {
         let msg = JSON.parse(m.data)
@@ -733,7 +755,7 @@ let IPFS = {}
     /*while (IdeaValueTree.key == null) {
       kash = '0x' + IdeaValueTree.key //await sha256(JSON.stringify(k))
     }*/
-  kash = IdeaValueTree.key //await sha256(JSON.stringify(k))
+  kash = mainKey //await sha256(JSON.stringify(k))
   kash =  '0x'+kash //'hyper://' +
 
     keyobj = {'ID':`${String(kash)}`,'KEY' : JSON.stringify({"key":kash}),'TYPE':'HYP','GENERATION_ALG':{
@@ -742,7 +764,7 @@ let IPFS = {}
     },'VERIFICATION_ALG':{name: "ed25519",
       hash: {name: "na"},}}
 
-      signaller = IdeaValueTree.key
+      signaller = mainKey
 
 //JWK__${String(kash).slice(-54)
 

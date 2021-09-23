@@ -1,7 +1,7 @@
 {
   "name": "oo.computer",
   "author": "ooda space ltd <lee@ooda.space>",
-  "version": "0.0.64",
+  "version": "0.0.65",
   "description": "  The oo.computer is a transparent system to contextualise and rank ideas with others.  It offers those who signal value in ideas and contexts a share of profits that arise from them",
   "homepage": "https://oo.computer",
   "main": "main.js",
@@ -50,18 +50,20 @@
     "electron-builder": "^22.10.5"
   },
   "dependencies": {
-    "@hyperswarm/dht": "^4.0.1",
-    "pump": "^3.0.0",
+    "@hyperswarm/dht": "^5.0.0-rc.6",
     "cross-blob": "^3.0.0",
     "electron-log": "^4.3.1",
     "electron-updater": "^4.3.5",
     "fetch-blob": "^3.0.1",
+    "hyperbee": "^1.6.3",
     "hyperdrive": "^10.20.0",
     "hyperspace": "^3.19.0",
     "hyperswarm": "^3.0.0-beta2",
     "ipfs": "^0.57.0",
     "it-all": "^1.0.5",
+    "noble-ed25519": "^1.2.5",
     "node-blob": "0.0.2",
+    "pump": "^3.0.0",
     "uint8arrays": "^2.1.6"
   },
   "productName": "oo.computer"

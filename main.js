@@ -124,15 +124,19 @@ function createDefaultWindow() {
   win.loadURL(`file://${__dirname}/version.html#v${app.getVersion()}`);
   return win;
 }
-
+let announcedKeys = []
 async function announceSignalChain(key){
-  console.log('announcing key',key)
-    let announcestream = node.announce(key,keyPair)
-    for await (const res of announcestream) {
-   // console.log('got res announceQuery1')//res
-    res.peers.forEach(peer => {
-        // console.log(' ********** got peer from announce',peer.publicKey)
-    })
+  if (!(announcedKeys.includes(key))){
+        console.log('announcing key',key)
+        let bufkey = Buffer.from(key,'hex')
+          let announcestream = node.announce(bufkey,keyPair)
+          for await (const res of announcestream) {
+         // console.log('got res announceQuery1')//res
+          res.peers.forEach(peer => {
+              // console.log(' ********** got peer from announce',peer.publicKey)
+          })
+        }
+        announcedKeys.push(key)
   }
 }
 
@@ -185,15 +189,16 @@ server.on('listening', async function () {
 server.listen(keyPair)
 
 async function lookupSignalChain(key){
-    let lookupstream = node.lookup(key)
+    let lookupstream = node.lookup(Buffer.from(key,'hex'))
     let SignalChain = signalChainBee.sub(key)
    /* if (!(Object.keys(latestSeq).includes(key.toString('hex')))){
         latestSeq[key.toString('hex')] = -1
         signalChains[key.toString('hex')] = {}
 
     }*/
+    console.log('looking up',key)
     for await (const res of lookupstream) {
-    //console.log('got res announceQuery1',res)
+    console.log('got res of lookupstream',res)
       res.peers.forEach(peer => {
            console.log(' ********** got peer from lookup',peer.publicKey)
           if (!(nodesarray.includes(peer.publicKey.toString('hex')))) {
@@ -221,22 +226,17 @@ async function lookupSignalChain(key){
                     break;
                     case 'Signal':
                         signal = JSON.parse(msg.signal)
-                        seq = msg.seq
                         len = await SignalChain.get('seq')
                         len = len ? Number(len) : len = 0
                         signaller = signal.SIGNALLER
-                          switch (signal.TYPE) {
+                        console.log('got value signal from peer',signal) 
+                          switch (signal.SIGNALTYPE) {
                                             case 'VALUE':
-                                                wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
-                                                check = await wordIndex.get(String(seq))
-                                                if (!check){
-                                                  result = await wordIndex.put(String(seq),d)
-                                                  seq++
-                                                  if (seq > len) {
-                                                    await SignalChain.put('seq',String(seq))
-                                                  }               
-                                                  BuildIdeaValueTree(signaller)
-                                                }
+                                                //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
+                                                await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
+           
+                                                  BuildIdeaValueTree(signaller,signal)
+                                                
                                             break;
                                             case 'DISCARD':
                                                 wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
@@ -271,6 +271,8 @@ async function lookupSignalChain(key){
       })
   }
 }
+
+
 
 const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
 
@@ -391,6 +393,17 @@ app.on('window-all-closed', () => {
   }
 })
 
+let lookedUpFilterers = []
+ipcMain.on('lookup',async (e,d)=>{
+  if (!(lookedUpFilterers.includes(d[1]))){
+    console.log('looking up',lookedUpFilterers,d[1])
+    let key = Buffer.from(d[1].slice(2),'hex') 
+    lookupSignalChain(key)
+    lookedUpFilterers.push(d[1])
+    win.webContents.send('lookup_response.'+String(d[0]),d[1]);
+  }
+})
+
 ipcMain.on('readdir',async (e,d)=>{
   ////console.log('readdir rcd',d);
   await ready()
@@ -410,11 +423,11 @@ ipcMain.on('media:add',async (e,d)=>{
 })
 
 ipcMain.on('media:get',async (e,d)=>{
-  console.log('media CAT',d);
+  //console.log('media CAT',d);
   let data  = await MediaBee.get(d[1][1]) //uint8ArrayConcat(await all(ipfs.cat(d[1])))
   //console.log('IPFS CAT result',data,uint8ArrayToString(data))
   let contenttype = await ContentTypeBee.get(d[1][1])
-  console.log('media CAT',[data,contenttype]);
+ // console.log('media CAT',[data,contenttype]);
   if (data) data = data.value.toString()
     if(contenttype) contenttype = contenttype.value.toString()
   win.webContents.send('media:get_response.'+String(d[0]),[data,contenttype])//uint8ArrayToString(data));
@@ -697,4 +710,5 @@ async function BuildIdeaValueTree(key,signal) {
                 }
             }      
     }// end if //for await discard
+    announceSignalChain(key.slice(2))
 }

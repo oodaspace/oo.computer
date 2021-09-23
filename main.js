@@ -143,7 +143,7 @@ async function announceSignalChain(key){
 let server = node.createServer(keyPair)
 server.on('connection', async function (noiseSocket) {
     console.log('server got connection :-)')
-    console.log('Remote, local, init public keys', noiseSocket.remotePublicKey, noiseSocket.publicKey,keyPair2.publicKey)
+    console.log('Remote, local, init public keys', noiseSocket.remotePublicKey, noiseSocket.publicKey)
     noiseSocket.on('data',async (d)=>{
                 console.log('node got msg',d)
                 let msg = JSON.parse(d)

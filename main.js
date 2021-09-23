@@ -145,8 +145,8 @@ server.on('connection', async function (noiseSocket) {
     console.log('server got connection :-)')
     console.log('Remote, local, init public keys', noiseSocket.remotePublicKey, noiseSocket.publicKey)
     noiseSocket.on('data',async (d)=>{
-                console.log('node got msg',d)
-                let msg = JSON.parse(d)
+                console.log('node got msg',d.toString())
+                let msg = JSON.parse(d.toString())
                 switch (msg.id) {
                     case 'RequestSignalChain':
                         let key = msg.key

@@ -208,7 +208,7 @@ async function lookupSignalChain(key){
               let skt = node.connect(peer.publicKey)
               //process.stdin.pipe(skt).pipe(process.stdout)
               console.log('wrting request',key)
-              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : ${'0x' + key.toString('hex')}}`)//, "endSeq" : ${1}
+              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
               skt.on('data',async (d)=>{
                 console.log('node2 got msg',d)
                 let msg = JSON.parse(d)
@@ -223,7 +223,7 @@ async function lookupSignalChain(key){
                 switch (msg.id) {
                     case 'GotSignalChain':
                         if (msg.seq > latestSeq[key.toString('hex')]){
-                            skt.write(`{"id" : "RequestSignalChain","startSeq" : 0, "key" : ${key}}`)
+                            skt.write(`{"id" : "RequestSignalChain","startSeq" : 0, "key" : "${'0x' + key.toString('hex')}"}`)
                         }
                     break;
                     case 'Signal':

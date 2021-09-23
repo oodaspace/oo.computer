@@ -206,8 +206,8 @@ async function lookupSignalChain(key){
               console.log(' got new peer',peer,peer.publicKey == keyPair.publicKey)
               nodesarray.push(peer.publicKey.toString('hex'));
               let skt = node.connect(peer.publicKey)
-              process.stdin.pipe(skt).pipe(process.stdout)
-              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0, "endSeq" : ${msg.seq}}`)
+              //process.stdin.pipe(skt).pipe(process.stdout)
+              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : ${'0x' + key}}`)//, "endSeq" : ${1}
               skt.on('data',async (d)=>{
                 console.log('node2 got msg',d)
                 let msg = JSON.parse(d)

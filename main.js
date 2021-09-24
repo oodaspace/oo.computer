@@ -158,7 +158,12 @@ server.on('connection', async function (noiseSocket) {
                         let valueSignals = SignalChain.sub('VALUE')
                         let discardSignals = SignalChain.sub('DISCARD')
                         let claimSignals = SignalChain.sub('CLAIM')
-                        while (i <= seq){
+
+                        for await (let signal of valueSignals.createReadStream()){
+                          console.log('sending signal')
+                          noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
+                        }
+                        /*while (i <= seq){
                             let signal = await valueSignals.get(i)
                             if (signal) {
                               noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
@@ -176,7 +181,7 @@ server.on('connection', async function (noiseSocket) {
                                 }
                             }
                             i++
-                        }
+                        }*/
                     break;
                     default:
                 }

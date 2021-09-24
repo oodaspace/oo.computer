@@ -247,7 +247,7 @@ async function lookupSignalChain(key){
                                                     signalTypeIndex = SignalChain.sub('0x' + key.toString('hex'))
                                                     await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                
-                                                      BuildIdeaValueTree(signaller,signal)
+                                                      BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
                                                     
                                                 break;
                                                 case 'DISCARD':
@@ -259,7 +259,7 @@ async function lookupSignalChain(key){
                                                       if (seq > len) {
                                                         await SignalChain.put('seq',String(seq))
                                                       }  
-                                                      BuildIdeaValueTree(signaller)
+                                                      BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
                                                     }
                                                 break;
                                                 default:
@@ -575,7 +575,7 @@ async function BuildIdeaValueTree(key,signal) {
                     //console.log('valueSignals--->>>>>>>',valueSignalObj,valueSignal)
 
                     let contextEntry = await IdeaValueTreeBee.get(valueSignal.CONTEXT);
-
+                    console.log('adding signal to value tree', contextEntry,valueSignal)
                     if (!contextEntry){
                       //add new context entry
                        //word is not already in value tree, so insert it
@@ -609,8 +609,8 @@ async function BuildIdeaValueTree(key,signal) {
                                 wordObj.signallers[key].totalsObj = {}
                                 wordObj.signallers[key].total = valueSignal.AMOUNT
                                 wordObj.signallers[key].seqs = [seq]
-                              wordObj.signallers[key].totalsObj[valueSignal.PROSPECTIVECONTEXT] = Number(valueSignal.AMOUNT)
-                              wordObj.signallers[key].propsObj[valueSignal.PROSPECTIVECONTEXT] = 1
+                                wordObj.signallers[key].totalsObj[valueSignal.PROSPECTIVECONTEXT] = Number(valueSignal.AMOUNT)
+                                wordObj.signallers[key].propsObj[valueSignal.PROSPECTIVECONTEXT] = 1
                             }
                             else {
                               if (!(Object.keys(wordObj.signallers[key].totalsObj).includes(valueSignal.PROSPECTIVECONTEXT))){

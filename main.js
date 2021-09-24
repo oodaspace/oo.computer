@@ -217,7 +217,7 @@ async function lookupSignalChain(key){
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
-                    console.log('node2 got msg',d.toString)
+                    console.log('node2 got msg',d.toString())
                     let msg = JSON.parse(d.toString())
                     let signal
                     let seq

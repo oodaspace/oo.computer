@@ -147,6 +147,7 @@ server.on('connection', async function (noiseSocket) {
     noiseSocket.on('data',async (d)=>{
                 console.log('node got msg',d.toString())
                 let msg = JSON.parse(d.toString())
+                console.log('node got msg',msg.id,SignalChainCore.key.toString('hex'),msg.key)
                 switch (msg.id) {
                     case 'RequestSignalChain':
                         let key = msg.key
@@ -205,70 +206,76 @@ async function lookupSignalChain(key){
           if (!(nodesarray.includes(peer.publicKey.toString('hex')))) {
               console.log(' got new peer',peer,peer.publicKey == keyPair.publicKey)
               nodesarray.push(peer.publicKey.toString('hex'));
-              let skt = node.connect(peer.publicKey)
-              //process.stdin.pipe(skt).pipe(process.stdout)
-              console.log('wrting request',key)
-              skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
-              skt.on('data',async (d)=>{
-                console.log('node2 got msg',d)
-                let msg = JSON.parse(d)
-                let signal
-                let seq
-                
-                let signalTypeIndex
-                let wordIndex
-                let result
-                let signaller
-                let check
-                switch (msg.id) {
-                    case 'GotSignalChain':
-                        if (msg.seq > latestSeq[key.toString('hex')]){
-                            skt.write(`{"id" : "RequestSignalChain","startSeq" : 0, "key" : "${'0x' + key.toString('hex')}"}`)
-                        }
-                    break;
-                    case 'Signal':
-                        signal = JSON.parse(msg.signal)
-                        len = await SignalChain.get('seq')
-                        len = len ? Number(len) : len = 0
-                        signaller = signal.SIGNALLER
-                        console.log('got value signal from peer',signal) 
-                          switch (signal.SIGNALTYPE) {
-                                            case 'VALUE':
-                                                //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
-                                                await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
-           
-                                                  BuildIdeaValueTree(signaller,signal)
-                                                
-                                            break;
-                                            case 'DISCARD':
-                                                wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
-                                                check = await wordIndex.get(String(seq))
-                                                if (!check){
-                                                  result = await wordIndex.put(String(seq),d)
-                                                  seq++
-                                                  if (seq > len) {
-                                                    await SignalChain.put('seq',String(seq))
-                                                  }  
-                                                  BuildIdeaValueTree(signaller)
-                                                }
-                                            break;
-                                            default:
-                                                check = await signalTypeIndex.get(String(seq))
-                                                if (!check){
-                                                  result = await signalTypeIndex.put(String(seq),d)
-                                                  seq++
-                                                  if (seq > len) {
-                                                    await SignalChain.put('seq',String(seq))
-                                                  }  
-                                                }
-                                        }
 
-                        
-                    break;
-                    default:
-                }
+                  let skt = node.connect(peer.publicKey)
+                  //process.stdin.pipe(skt).pipe(process.stdout)
+                  console.log('writing request',`${'0x' + key.toString('hex')}`)
+                  skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
+                  skt.on('data',async (d)=>{
+                    console.log('node2 got msg',d)
+                    let msg = JSON.parse(d)
+                    let signal
+                    let seq
+                    
+                    let signalTypeIndex
+                    let wordIndex
+                    let result
+                    let signaller
+                    let check
+                    switch (msg.id) {
+                        case 'GotSignalChain':
+                            if (msg.seq > latestSeq[key.toString('hex')]){
+                                skt.write(`{"id" : "RequestSignalChain","startSeq" : 0, "key" : "${'0x' + key.toString('hex')}"}`)
+                            }
+                        break;
+                        case 'Signal':
+                            signal = JSON.parse(msg.signal)
+                            len = await SignalChain.get('seq')
+                            len = len ? Number(len) : len = 0
+                            signaller = signal.SIGNALLER
+                            console.log('got value signal from peer',signal) 
+                              switch (signal.SIGNALTYPE) {
+                                                case 'VALUE':
+                                                    //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
+                                                    await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
+               
+                                                      BuildIdeaValueTree(signaller,signal)
+                                                    
+                                                break;
+                                                case 'DISCARD':
+                                                    wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
+                                                    check = await wordIndex.get(String(seq))
+                                                    if (!check){
+                                                      result = await wordIndex.put(String(seq),d)
+                                                      seq++
+                                                      if (seq > len) {
+                                                        await SignalChain.put('seq',String(seq))
+                                                      }  
+                                                      BuildIdeaValueTree(signaller)
+                                                    }
+                                                break;
+                                                default:
+                                                    check = await signalTypeIndex.get(String(seq))
+                                                    if (!check){
+                                                      result = await signalTypeIndex.put(String(seq),d)
+                                                      seq++
+                                                      if (seq > len) {
+                                                        await SignalChain.put('seq',String(seq))
+                                                      }  
+                                                    }
+                                            }
+
+                            
+                        break;
+                        default:
+                    }
+                  
+                  })
+                  skt.on('error',(e)=>{console.log('socket error',e)})
+              
+
                 //use node.create server to match above
-              })
+              
           }
       })
   }

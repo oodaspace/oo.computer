@@ -160,8 +160,8 @@ server.on('connection', async function (noiseSocket) {
                         let claimSignals = SignalChain.sub('CLAIM')
 
                         for await (let signal of valueSignals.createReadStream()){
-                          console.log('sending signal',`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
-                          noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
+                          console.log('sending signal',`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal.value}}`,signal)
+                          noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value)}}`)
                         }
                         /*while (i <= seq){
                             let signal = await valueSignals.get(i)

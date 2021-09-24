@@ -602,7 +602,7 @@ async function BuildIdeaValueTree(key,signal) {
                     else {
                       // amend existing record:
                       let wordObj = JSON.parse(contextEntry.value)
-                      console.log('adding signal wordObj', wordObj)
+                      console.log('adding signal wordObj', key, wordObj)
                       if (!(wordObj.children.includes(valueSignal.PROSPECTIVECONTEXT))){ wordObj.children.push(valueSignal.PROSPECTIVECONTEXT) }
                             if (!(Object.keys(wordObj.signallers).includes(key))){
                                 wordObj.signallers[key] = {}
@@ -612,7 +612,7 @@ async function BuildIdeaValueTree(key,signal) {
                                 wordObj.signallers[key].seqs = [seq]
                                 wordObj.signallers[key].totalsObj[valueSignal.PROSPECTIVECONTEXT] = Number(valueSignal.AMOUNT)
                                 wordObj.signallers[key].propsObj[valueSignal.PROSPECTIVECONTEXT] = 1
-                                console.log('adding signal wordObj2', wordObj)
+                                console.log('adding signal wordObj2', wordObj.signallers,key)
                             }
                             else {
                               if (!(Object.keys(wordObj.signallers[key].totalsObj).includes(valueSignal.PROSPECTIVECONTEXT))){

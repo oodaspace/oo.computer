@@ -197,7 +197,8 @@ server.listen(keyPair)
 let nodesarray = []
 async function lookupSignalChain(key){
     let lookupstream = node.lookup(Buffer.from(key,'hex'))
-    let SignalChain = signalChainBee.sub(key)
+    //let SignalChain = signalChainBee.sub(key)
+    let SignalChain = signalChainBee.sub(String('0x' + SignalChainCore.key.toString('hex')))
    /* if (!(Object.keys(latestSeq).includes(key.toString('hex')))){
         latestSeq[key.toString('hex')] = -1
         signalChains[key.toString('hex')] = {}
@@ -239,9 +240,11 @@ async function lookupSignalChain(key){
                             len = len ? Number(len) : len = 0
                             signaller = signal.SIGNALLER
                             console.log('got value signal from peer',signal) 
+                            signalTypeIndex = SignalChain.sub(String(signal.SIGNALTYPE))
                               switch (signal.SIGNALTYPE) {
                                                 case 'VALUE':
                                                     //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
+                                                    signalTypeIndex = SignalChain.sub('0x' + key.toString('hex'))
                                                     await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                
                                                       BuildIdeaValueTree(signaller,signal)

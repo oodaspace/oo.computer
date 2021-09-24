@@ -160,7 +160,7 @@ server.on('connection', async function (noiseSocket) {
                         let claimSignals = SignalChain.sub('CLAIM')
 
                         for await (let signal of valueSignals.createReadStream()){
-                          console.log('sending signal')
+                          console.log('sending signal',`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
                           noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
                         }
                         /*while (i <= seq){
@@ -217,8 +217,8 @@ async function lookupSignalChain(key){
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
-                    console.log('node2 got msg',d)
-                    let msg = JSON.parse(d)
+                    console.log('node2 got msg',d.toString)
+                    let msg = JSON.parse(d.toString())
                     let signal
                     let seq
                     

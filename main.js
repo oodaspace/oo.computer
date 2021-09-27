@@ -196,10 +196,10 @@ server.on('connection', async function (noiseSocket) {
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
-                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : "${media.value.toString()}", "contenttype" : "${contenttype.value.toString()}"}`)
+                        noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "${media.value.toString()}", "contenttype" : "${contenttype.value.toString()}"}`)
                       }
                       else {
-                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : "none", "contenttype" : "none"}`)
+                        noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "none", "contenttype" : "none"}`)
                       }
                       break;
                     default:
@@ -239,7 +239,6 @@ async function lookupSignalChain(key){
                   skt.on('data',async (d)=>{
                     console.log('node2 got msg',d.toString())
                     let msg = JSON.parse(d.toString())
-                    
                     let signal
                     let seq
                     

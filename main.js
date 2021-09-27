@@ -250,6 +250,7 @@ async function lookupSignalChain(key){
                             console.log('got value signal from peer',signal.SIGNALTYPE) 
                             signalTypeIndex = SignalChain.sub(String(signal.SIGNALTYPE))
                             if (!(await gotSignal(signal.SIGNALHASH))) {
+                              await putSignal(signal)
                               switch (signal.SIGNALTYPE) {
                                                 case 'VALUE':
                                                     //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
@@ -301,11 +302,19 @@ async function lookupSignalChain(key){
 }
 
 async function gotSignal(signalhash) {
-
+  console.log('got signal? ', signalhash)
   let check = await hashIndexedSignalBee.get(signalhash)
 
   if (check) return true //check hash
   return false
+
+}
+
+async function putSignal(signal) {
+console.log('putting signal ', signal.SIGNALHASH)
+  await hashIndexedSignalBee.put(signal.SIGNALHASH,signal)
+
+  return true
 
 }
 

@@ -191,6 +191,15 @@ server.on('connection', async function (noiseSocket) {
                             i++
                         }*/
                     break;
+                    case 'RequestMedia':
+                      media = await MediaBee.get(msg.idea)
+                      contenttype = await ContentTypeBee.get(msg.idea)
+                      if (media && contenttype){
+                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${media}, "contenttype" : ${contenttype}}`)
+                      }
+                      else {
+                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : "none", "contenttype" : "none"}`)
+                      }
                     default:
                 }
     })
@@ -259,8 +268,13 @@ async function lookupSignalChain(key){
                                                     //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
                                                     signalTypeIndex = SignalChain.sub('0x' + key.toString('hex'))
                                                     await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
-               
-                                                      BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
+                                                    BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
+                                                    // check if media
+                                                    if (signal.IDEA.slice(2,8) == '4d4544'){
+                                                          // send get media message if so.
+                                                          skt.write(`{"id" : "RequestMedia", "idea" : "${signal.IDEA}"}`)
+                                                    }
+                                                    
                                                     
                                                 break;
                                                 case 'DISCARD':
@@ -290,6 +304,15 @@ async function lookupSignalChain(key){
 
                             
                         break;
+                        case 'Media':
+// /{"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}
+                              if (!(msg.media == 'none')){
+                                 //
+                                 console.log('got media!',msg)
+                                 await MediaBee.put(msg.idea,msg.media)
+                                 await ContentTypeBee.put(msg.idea,msg.contenttype)
+                              }
+                        break;
                         default:
                     }
                   
@@ -307,24 +330,18 @@ async function lookupSignalChain(key){
 async function gotSignal(signalhash) {
    console.log('got signal? ', signalhash,true)
   let check = await hashIndexedSignalBee.get(signalhash)
-
   if (check) return true //check hash
     console.log('got signal? ', signalhash,false)
   return false
-
 }
 
 async function putSignal(signal) {
-console.log('putting signal ', String(signal.SIGNALHASH),signal)
+  console.log('putting signal ', String(signal.SIGNALHASH),signal)
   await hashIndexedSignalBee.put(String(signal.SIGNALHASH),JSON.stringify(signal))
-
   return true
-
 }
 
 const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
-
-
 
 const IPFSready = () => new Promise(async (r) => {
   while (!ipfsready){

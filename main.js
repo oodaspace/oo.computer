@@ -192,6 +192,7 @@ server.on('connection', async function (noiseSocket) {
                         }*/
                     break;
                     case 'RequestMedia':
+                    console.log('got media request')
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
@@ -270,10 +271,11 @@ async function lookupSignalChain(key){
                                                     await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                                                     BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
                                                     // check if media
-                                                    co
+                                                    console.log('isMedia',signal.IDEA.slice(2,8) == '4d4544')
                                                     if (signal.IDEA.slice(2,8) == '4d4544'){
                                                           // send get media message if so.
                                                           skt.write(`{"id" : "RequestMedia", "idea" : "${signal.IDEA}"}`)
+                                                          console.log('sending media request')
                                                     }
                                                     
                                                     

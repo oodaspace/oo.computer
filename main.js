@@ -235,7 +235,7 @@ async function lookupSignalChain(key){
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
-                    console.log('node2 got msg')
+                    console.log('node2 got msg',String(d))
                     let msg = JSON.parse(d.toString())
                     let signal
                     let seq
@@ -270,6 +270,7 @@ async function lookupSignalChain(key){
                                                     await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                                                     BuildIdeaValueTree(String('0x' + SignalChainCore.key.toString('hex')),signal)
                                                     // check if media
+                                                    co
                                                     if (signal.IDEA.slice(2,8) == '4d4544'){
                                                           // send get media message if so.
                                                           skt.write(`{"id" : "RequestMedia", "idea" : "${signal.IDEA}"}`)

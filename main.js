@@ -160,7 +160,7 @@ server.on('connection', async function (noiseSocket) {
                         let claimSignals = SignalChain.sub('CLAIM')
 
                         for await (let signal of valueSignals.createReadStream()){
-                          console.log('sending signal',`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal.value.toString()}}`,signal.value.toString())
+                          console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
                           noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
                         }
                         /*while (i <= seq){
@@ -472,7 +472,7 @@ ipcMain.on('IdeaValueTree:get',async (e,d)=>{
   //let sub = IdeaValueTreeBee.sub(signaller)
   let result = await IdeaValueTreeBee.get(word) 
   
-  if (result) result = result.value.toString() 
+  if (result) result = result.value.toString()
   //if (!result) result = "falseafsdfadf"
    // console.log('IdeaValueTree:get',signaller,word,result)
   win.webContents.send('IdeaValueTree:get_response.'+String(d[0]),result);
@@ -575,7 +575,7 @@ async function BuildIdeaValueTree(key,signal) {
                     //console.log('valueSignals--->>>>>>>',valueSignalObj,valueSignal)
 
                     let contextEntry = await IdeaValueTreeBee.get(valueSignal.CONTEXT);
-                    console.log('adding signal to value tree', contextEntry,valueSignal)
+                    console.log('adding signal to value tree', valueSignal.IDEA,valueSignal.SIGNALTYPE)
                     if (!contextEntry){
                       //add new context entry
                        //word is not already in value tree, so insert it
@@ -602,9 +602,10 @@ async function BuildIdeaValueTree(key,signal) {
                     else {
                       // amend existing record:
                       let wordObj = JSON.parse(contextEntry.value)
-                      console.log('adding signal wordObj', key, wordObj)
+                      console.log('adding signal', key)
                       if (!(wordObj.children.includes(valueSignal.PROSPECTIVECONTEXT))){ wordObj.children.push(valueSignal.PROSPECTIVECONTEXT) }
                             if (!(Object.keys(wordObj.signallers).includes(key))){
+                              console.log('adding signal wordObj2', wordObj.signallers,key)
                                 wordObj.signallers[key] = {}
                                 wordObj.signallers[key].rankedList = [valueSignal.PROSPECTIVECONTEXT]
                                 wordObj.signallers[key].totalsObj = {}
@@ -612,7 +613,7 @@ async function BuildIdeaValueTree(key,signal) {
                                 wordObj.signallers[key].seqs = [seq]
                                 wordObj.signallers[key].totalsObj[valueSignal.PROSPECTIVECONTEXT] = Number(valueSignal.AMOUNT)
                                 wordObj.signallers[key].propsObj[valueSignal.PROSPECTIVECONTEXT] = 1
-                                console.log('adding signal wordObj2', wordObj.signallers,key)
+                                
                             }
                             else {
                               if (!(Object.keys(wordObj.signallers[key].totalsObj).includes(valueSignal.PROSPECTIVECONTEXT))){

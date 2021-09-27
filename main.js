@@ -196,11 +196,12 @@ server.on('connection', async function (noiseSocket) {
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
-                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${media}, "contenttype" : ${contenttype}}`)
+                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}`)
                       }
                       else {
                         noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : "none", "contenttype" : "none"}`)
                       }
+                      break;
                     default:
                 }
     })
@@ -274,11 +275,10 @@ async function lookupSignalChain(key){
                                                     console.log('isMedia',signal.IDEA.slice(2,8) == '4d4544')
                                                     if (signal.IDEA.slice(2,8) == '4d4544'){
                                                           // send get media message if so.
+                                                          console.log('sending media request',signal.IDEA)
                                                           skt.write(`{"id" : "RequestMedia", "idea" : "${signal.IDEA}"}`)
                                                           console.log('sending media request')
                                                     }
-                                                    
-                                                    
                                                 break;
                                                 case 'DISCARD':
                                                     wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
@@ -308,7 +308,7 @@ async function lookupSignalChain(key){
                             
                         break;
                         case 'Media':
-// /{"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}
+// {"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}
                               if (!(msg.media == 'none')){
                                  //
                                  console.log('got media!',msg)
@@ -321,10 +321,7 @@ async function lookupSignalChain(key){
                   
                   })
                   skt.on('error',(e)=>{console.log('socket error',e)})
-              
-
                 //use node.create server to match above
-              
           }
       })
   }

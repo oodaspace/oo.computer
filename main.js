@@ -226,7 +226,7 @@ async function lookupSignalChain(key){
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
-                    console.log('node2 got msg',d.toString())
+                    console.log('node2 got msg')
                     let msg = JSON.parse(d.toString())
                     let signal
                     let seq
@@ -236,6 +236,7 @@ async function lookupSignalChain(key){
                     let result
                     let signaller
                     let check
+                    let got
                     switch (msg.id) {
                         case 'GotSignalChain':
                             if (msg.seq > latestSeq[key.toString('hex')]){
@@ -249,7 +250,9 @@ async function lookupSignalChain(key){
                             signaller = signal.SIGNALLER
                             console.log('got value signal from peer',signal.SIGNALTYPE) 
                             signalTypeIndex = SignalChain.sub(String(signal.SIGNALTYPE))
-                            if (!(await gotSignal(signal.SIGNALHASH))) {
+                            got = await gotSignal(signal.SIGNALHASH)
+                            console.log('got??', got)
+                            if (!(got)) {
                               await putSignal(signal)
                               switch (signal.SIGNALTYPE) {
                                                 case 'VALUE':
@@ -302,17 +305,18 @@ async function lookupSignalChain(key){
 }
 
 async function gotSignal(signalhash) {
-  console.log('got signal? ', signalhash)
+   console.log('got signal? ', signalhash,true)
   let check = await hashIndexedSignalBee.get(signalhash)
 
   if (check) return true //check hash
+    console.log('got signal? ', signalhash,false)
   return false
 
 }
 
 async function putSignal(signal) {
-console.log('putting signal ', signal.SIGNALHASH)
-  await hashIndexedSignalBee.put(signal.SIGNALHASH,signal)
+console.log('putting signal ', String(signal.SIGNALHASH),signal)
+  await hashIndexedSignalBee.put(String(signal.SIGNALHASH),JSON.stringify(signal))
 
   return true
 

@@ -41,6 +41,7 @@ let ideaTreeStore = userDataPath + '/ideaTree'
 let mediaStore = userDataPath + '/media'
 let contentTypeStore = userDataPath + '/contentTypes'
 let keyStore = userDataPath + '/keyStore'
+let hashIndexedSignals = userDataPath + '/hashIndexedSignals'
 let privateKey
 let publicKey
 
@@ -68,6 +69,13 @@ SignalChainCore.ready(()=>{
     valueEncoding: 'binary'
   })
   
+})
+let hashIndexedSignalCore = new Hypercore(hashIndexedSignals)
+SignalChainCore.ready(()=>{
+  hashIndexedSignalBee = new Hyperbee(hashIndexedSignalCore,{
+    keyEncoding: 'utf-8',
+    valueEncoding: 'binary'
+  })
 })
 let IdeaTreeCore = new Hypercore(ideaTreeStore)
 IdeaTreeCore.ready(()=>{
@@ -239,8 +247,9 @@ async function lookupSignalChain(key){
                             len = await SignalChain.get('seq')
                             len = len ? Number(len) : len = 0
                             signaller = signal.SIGNALLER
-                            console.log('got value signal from peer',signal) 
+                            console.log('got value signal from peer',signal.SIGNALTYPE) 
                             signalTypeIndex = SignalChain.sub(String(signal.SIGNALTYPE))
+                            if (!(await gotSignal(signal.SIGNALHASH))) {
                               switch (signal.SIGNALTYPE) {
                                                 case 'VALUE':
                                                     //wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
@@ -272,6 +281,8 @@ async function lookupSignalChain(key){
                                                       }  
                                                     }
                                             }
+                                          
+                            }//end of if got signal
 
                             
                         break;
@@ -289,7 +300,14 @@ async function lookupSignalChain(key){
   }
 }
 
+async function gotSignal(signalhash) {
 
+  let check = await hashIndexedSignals.get(signalhash)
+
+  if (check) return true //check hash
+  return false
+
+}
 
 const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
 

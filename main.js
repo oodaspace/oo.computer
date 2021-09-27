@@ -302,7 +302,7 @@ async function lookupSignalChain(key){
 
 async function gotSignal(signalhash) {
 
-  let check = await hashIndexedSignals.get(signalhash)
+  let check = await hashIndexedSignalBee.get(signalhash)
 
   if (check) return true //check hash
   return false

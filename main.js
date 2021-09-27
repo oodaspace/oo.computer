@@ -196,7 +196,7 @@ server.on('connection', async function (noiseSocket) {
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
-                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}`)
+                        noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media.value)}, "contenttype" : ${JSON.stringify(contenttype.value)}}`)
                       }
                       else {
                         noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : "none", "contenttype" : "none"}`)
@@ -237,8 +237,9 @@ async function lookupSignalChain(key){
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
-                    console.log('node2 got msg',String(d))
+                    console.log('node2 got msg',d.toString())
                     let msg = JSON.parse(d.toString())
+                    
                     let signal
                     let seq
                     
@@ -262,7 +263,7 @@ async function lookupSignalChain(key){
                             console.log('got value signal from peer',signal.SIGNALTYPE) 
                             signalTypeIndex = SignalChain.sub(String(signal.SIGNALTYPE))
                             got = await gotSignal(signal.SIGNALHASH)
-                            console.log('got??', got)
+                            console.log('got??', got,signal.IDEA)
                             if (!(got)) {
                               await putSignal(signal)
                               switch (signal.SIGNALTYPE) {
@@ -309,9 +310,10 @@ async function lookupSignalChain(key){
                         break;
                         case 'Media':
 // {"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}
+console.log('got media!',msg)
                               if (!(msg.media == 'none')){
                                  //
-                                 console.log('got media!',msg)
+                                 console.log('got media2!',msg)
                                  await MediaBee.put(msg.idea,msg.media)
                                  await ContentTypeBee.put(msg.idea,msg.contenttype)
                               }

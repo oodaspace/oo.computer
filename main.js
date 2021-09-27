@@ -196,7 +196,6 @@ server.on('connection', async function (noiseSocket) {
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
-                        let 
                         noiseSocket.write(`{"id" : "Media", "idea":${msg.idea}, "media" : ${media.value.toString()}, "contenttype" : ${contenttype.value.toString()}}`)
                       }
                       else {

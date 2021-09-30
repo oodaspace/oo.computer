@@ -523,7 +523,7 @@ ipcMain.on('IdeaValueTree:get',async (e,d)=>{
   
   if (result) result = result.value.toString()
   //if (!result) result = "falseafsdfadf"
-   // console.log('IdeaValueTree:get',signaller,word,result)
+    console.log('IdeaValueTree:get',signaller,word)
   win.webContents.send('IdeaValueTree:get_response.'+String(d[0]),result);
 })
 

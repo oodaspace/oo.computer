@@ -250,7 +250,7 @@ let signalHash = ''//hash of signal
                               });
           },
 
-          VALUE: function(signaller='$SIGNALLER',context='$CONTEXT',contextInitiator='$CONTEXTOWNER',idea='$IDEA',ideaInitiator='$IDEAOWNER',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',prospectiveContextInitiator='$PROSPECTIVECONTEXTOWNER',amount='$AMOUNT',currency='$CURRENCY',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
+          VALUE: function(signaller='$SIGNALLER',context='$CONTEXT',contextInitiator='$CONTEXTINITIATOR',idea='$IDEA',ideaInitiator='$IDEAINITIATOR',distance='$DISTANCE',prospectivecontext='$PROSPECTIVECONTEXT',prospectiveInitiator='$PROSPECTIVECONTEXTINITIATOR',amount='$AMOUNT',currency='$CURRENCY',signalNo='$SIGNALNO',prevSignalHash='$PREVSIGNALHASH') {
 
 let signal =`VALUE:
 
@@ -266,7 +266,7 @@ I recognise that:
 
 ${contextInitiator} is the initiator of context
 ${ideaInitiator} is the initiator of idea
-${prospectiveContextInitiator} is the initiator of prospectiveContext
+${prospectiveInitiator} is the initiator of prospectiveContext
 
 I will pay the initiator* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
 I will pay the initiator* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
@@ -291,9 +291,12 @@ let signalHash = ''//hash of signal
                                         SIGNALTYPE: 'VALUE',
                                         SIGNALLER : signaller,
                                         CONTEXT : context,
+                                        CONTEXTINITIATOR : contextInitiator,
                                         IDEA : idea,
+                                        IDEAINITIATOR : ideaInitiator,
                                         DISTANCE : distance,
                                         PROSPECTIVECONTEXT : XORcontextidea(context,idea,distance),
+                                        PROSPECTIVECONTEXTINITIATOR : prospectiveInitiator,
                                         AMOUNT : amount,
                                         CURRENCY : currency,
                                         SIGNAL :  String(signal),
@@ -589,7 +592,8 @@ let LeeKey = "79c7e9c64567bd6280b565d7ee5f401d456258983f6216cc17aaad6375d98aa8" 
 let IdeaValueTree = {}
 let signalChain = {}
 let initSignalChain
-let IPFS = {}
+let IdeaValueTreeGet
+let SignalChainPut
 
 // this must run on first pass of the code in the browser, so IIFE:
 ;(async function(){
@@ -615,100 +619,21 @@ initNeeded = await new Promise(r => {window.api.receive('SignalChain:isInit_resp
 initNeeded = !initNeeded
 console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+String(1),window.api.receive)
 
-console.log('ins init needed? 3',initNeeded)
 
-    /*let IPFSIndex = 0
-    IPFS.add =  data => new Promise(r => {
-    console.log('ipfs adding',data)
-        IPFSIndex++
-        window.api.send('IPFS:add'+'.'+String(IPFSIndex),data)
-        window.api.receive('IPFS:add_response'+'.'+String(IPFSIndex),(result)=>{
-            r(result)
-        })
-    })
-    IPFS.cat =  cid => new Promise(r => {
-    console.log('ipfs cating',cid)
-        IPFSIndex++
-        window.api.send('IPFS:cat'+'.'+String(IPFSIndex),cid)
-        window.api.receive('IPFS:cat_response'+'.'+String(IPFSIndex),(result)=>{
-            r(result)
-        })
-    })
+   IdeaValueTreeGet = async (word,signaller='default') => {
+        msgIndex++
+        window.api.send('IdeaValueTree:get'+'.'+String(msgIndex),[signaller,word])
+        return new Promise(r => {window.api.receive('IdeaValueTree:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+    }
 
-  let IdeaValueTreeFlag = false
-  IdeaValueTreeFlag = await IdeaValueTreeExists()
-  if (!IdeaValueTreeFlag){ initNeeded = true}
-      let initIdeaValueTree =  () => new Promise(r => {
-    		let path = '/'
-            IdeaValueTreeIndex++
-    		window.api.send('initIdeaValueTree'+'.'+String(IdeaValueTreeIndex))
-    		window.api.receive('initIdeaValueTree_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
-    			r(result)
-    		})
-    	})
-      IdeaValueTree.key = await initIdeaValueTree()
-      //}
+    SignalChainPut = async (signal) => {
+        msgIndex++
+        window.api.send('SignalChain:put'+'.'+String(msgIndex),signal)
+        return new Promise(r => {window.api.receive('SignalChain:put_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+    }
 
-	IdeaValueTree.readdir =  drivekey => new Promise(r => {
-		let path = '/'
-        IdeaValueTreeIndex++
-		window.api.send('readdir'+'.'+String(IdeaValueTreeIndex),[drivekey,path])
-		window.api.receive('readdir_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
-			r(result)
-		})
-	})
+  
 
-	IdeaValueTree.readFile =  (path) => new Promise(r => {
-        IdeaValueTreeIndex++
-		window.api.send('IdeaValueTree:readFile'+'.'+String(IdeaValueTreeIndex),[path])
-		window.api.receive('IdeaValueTree:readFile_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
-			r(result)
-		})
-	})
-
-	IdeaValueTree.writeFile =  (path,file) => new Promise(r => {
-        IdeaValueTreeIndex++
-		window.api.send('writeFile'+'.'+String(IdeaValueTreeIndex),[path,file])
-		window.api.receive('writeFile_response'+'.'+String(IdeaValueTreeIndex),(result)=>{
-			r(result)
-		})
-
-	})
-
-    let initSignalChain = () => new Promise(r => {
-        signalChainIndex++
-        console.log('sending chain init')
-        window.api.send('initSignalChain'+'.'+String(signalChainIndex))
-        window.api.receive('initSignalChain_response'+'.'+String(signalChainIndex),(result)=>{
-            console.log('chain init',result)
-            r(result);
-        })
-    })
-    signalChain.key = await initSignalChain()
-
-    signalChain.append =  (file) => new Promise(r => {
-        signalChainIndex++
-        window.api.send('signalChain:append'+'.'+String(signalChainIndex),[file])
-        window.api.receive('signalChain:append_response'+'.'+String(signalChainIndex),(result)=>{
-            r(result)
-        })
-
-    })
-
-    signalChain.get =  blockNo => new Promise(r => {
-        signalChainIndex++
-        window.api.send('signalChain:get.'+String(signalChainIndex),[blockNo])
-        window.api.receive('signalChain:get_response.'+String(signalChainIndex),(result)=>{
-            r(result)
-        })
-    })
-
-  data = await signalChain.get(0,{wait:false}).then((r)=>{console.log('get r initNeeded?',r)}).catch((e)=>{//**
-    console.log('get error initNeeded?',e)
-  initNeeded = true})
-*/
- 
-    
 
       let getMainKey =  () => new Promise(async r => {
 

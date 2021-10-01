@@ -586,17 +586,16 @@ ipcMain.on('SignalChain:put',async (e,d)=>{
                             await SignalChain.put('seq',String(seq))
                         break;
                         case 'VALUE':
-                            wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
                             result = await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                             seq++
                             await SignalChain.put('seq',String(seq))
                             BuildIdeaValueTree('0x' + SignalChainCore.key.toString('hex'),signal)
                         break;
                         case 'DISCARD':
-                            wordIndex = await signalTypeIndex.sub(signal.CONTEXT)
-                            result = await wordIndex.put(String(seq),JSON.stringify(d[1]))
+                            result = await signalTypeIndex.put(String(signal.CONTEXT), JSON.stringify(signal))
                             seq++
                             await SignalChain.put('seq',String(seq))
+                             console.log('DISCARD signal added to signal chain')
                             BuildIdeaValueTree('0x' + SignalChainCore.key.toString('hex'),signal)
                         break;
                         default:
@@ -632,6 +631,7 @@ async function BuildIdeaValueTree(key,signal) {
                             wordObj.parent = valueSignal.PARENT
                             wordObj.distance = valueSignal.DISTANCE
                             wordObj.children = [valueSignal.PROSPECTIVECONTEXT]
+                            wordObj.initiator = valueSignal.CONTEXTINITIATOR
                             wordObj.isDiscarded = false
                             wordObj.isSignaller = false
                             wordObj.isFilter = false
@@ -691,6 +691,7 @@ async function BuildIdeaValueTree(key,signal) {
                             wordObj.parent = "0x0000000000000000000000000000000000000000000000000000000000000000"
                             wordObj.distance = 0
                             wordObj.children = []
+                            wordObj.initiator = valueSignal.IDEAINITIATOR
                             wordObj.isDiscarded = false
                             wordObj.isSignaller = false
                             wordObj.isFilter = false
@@ -715,6 +716,7 @@ async function BuildIdeaValueTree(key,signal) {
                             wordObj.parent = valueSignal.CONTEXT
                             wordObj.distance = valueSignal.DISTANCE 
                             wordObj.children = []
+                            wordObj.initiator = valueSignal.PROSPECTIVECONTEXTINITIATOR
                             wordObj.isDiscarded = false
                             wordObj.isSignaller = false
                             wordObj.isFilter = false
@@ -737,47 +739,42 @@ async function BuildIdeaValueTree(key,signal) {
           let dict = signalJSON
           let seq = dict.seq*/
           let seq = signal.SIGNALNO
-          let discardSignal = JSON.parse(dict.value)
-          let contextEntry = await IdeaValueTreeBee.get(discardSignal.context);
-          if (!contextEntry){
+          
+ console.log('updating idea bee from DISCARd',signal.PROSPECTIVECONTEXT)
 
-          }
-          else {
-            // amend existing record:
-            let wordObj = JSON.parse(contextEntry.value)
-            if (seq > wordObj.signallers[key].seqs[wordObj.signallers[key].seqs.length-1]){
-                      if (!(wordObj.children.includes(discardSignal.PROSPECTIVECONTEXT))){ wordObj.children.push(discardSignal.PROSPECTIVECONTEXT) }
-                      if (!(Object.keys(wordObj.signallers).includes(key))){
-                          wordObj.signallers[key] = {}
-                          wordObj.signallers[key].rankedList = [discardSignal.PROSPECTIVECONTEXT]
-                          wordObj.signallers[key].totalsObj = {}
-                          wordObj.signallers[key].total = 0
-                          wordObj.signallers[key].seqs = [seq]
-                        wordObj.signallers[key].totalsObj[discardSignal.PROSPECTIVECONTEXT] = 0
-                        wordObj.signallers[key].propsObj[discardSignal.PROSPECTIVECONTEXT] = 0
-                      }
-                      else {
-                        if (!(Object.keys(wordObj.signallers[key].totalsObj).includes(discardSignal.PROSPECTIVECONTEXT))){
-                            wordObj.signallers[key].totalsObj[discardSignal.PROSPECTIVECONTEXT] = 0
-                        }
-                        else {
-                          wordObj.signallers[key].totalsObj[discardSignal.PROSPECTIVECONTEXT] = 0
-                        }
 
-                        wordObj.signallers[key].total = 0
-                      }
-                      if (wordObj.signallers[key].total !== 0){
-                        for (let w in wordObj.signallers[key].totalsObj){
-                          wordObj.signallers[key].propsObj[w] = wordObj.signallers[key].totalsObj[w]/wordObj.signallers[key].total
-                        }
-                      }
-                      if (!(wordObj.signallers[key].seqs.includes(seq))){
-                        wordObj.signallers[key].seqs.push(seq)
-                      }
+           // if (seq > wordObj.signallers[key].seqs[wordObj.signallers[key].seqs.length-1]){
+                     let prospectiveEntry = await IdeaValueTreeBee.get(signal.PROSPECTIVECONTEXT);
+                    if (!prospectiveEntry){
+                      //add new idea entry:
+                            let wordObj = {}
+                            wordObj.parent = "0x0000000000000000000000000000000000000000000000000000000000000000"
+                            wordObj.distance = 0
+                            wordObj.children = []
+                            wordObj.isDiscarded = true
+                            wordObj.isSignaller = false
+                            wordObj.isFilter = false
+                            wordObj.signallers = {}
+                            wordObj.signallers[key] = {}
+                            wordObj.signallers[key].rankedList = []
+                            wordObj.signallers[key].totalsObj = {}
+                            wordObj.signallers[key].propsObj = {}
+                            wordObj.signallers[key].total = 0
+                            wordObj.signallers[key].seqs = []
+                            wordObj.media = {}
+                            wordObj = JSON.stringify(wordObj)
+                            await IdeaValueTreeBee.put(signal.PROSPECTIVECONTEXT, wordObj)
+                    } 
+                    else {
+                      //amend existing record:
+                      let wordObj = JSON.parse(prospectiveEntry.value)
+                      wordObj.isDiscarded = true
                       wordObj = JSON.stringify(wordObj)
-                      await IdeaValueTreeBee.put(discardSignal.CONTEXT, wordObj)
-                }
-            }      
+                            await IdeaValueTreeBee.put(signal.PROSPECTIVECONTEXT, wordObj)
+                    }
+
+                
+            //}      
     }// end if //for await discard
     announceSignalChain(key.slice(2))
 }

@@ -606,6 +606,25 @@ ipcMain.on('SignalChain:put',async (e,d)=>{
       win.webContents.send('SignalChain:put_response.'+String(d[0]),result);
 })
 
+ipcMain.on('Name:get',async (e,d)=>{
+      let result
+      let nameObj = await IdeaValueTreeBee.get('0x7c7c7c000000000000000000000000000000000000000000000000006e616d65')    //hexifyString('name')  
+      console.log('in name get', d,nameObj)  
+      if (nameObj){
+        nameObj = JSON.parse(nameObj.value.toString())
+        if (Object.keys(nameObj.signallers).includes(d[1][0])){
+          result = nameObj.signallers[d[1][0]].rankedList[0]
+        }
+        else {
+          result = d[1][0]
+        }
+      }
+       else {
+          result = d[1][0]
+        }     
+      win.webContents.send('Name:get_response.'+String(d[0]),result);
+})
+
 
 // Build IdeaValueTree From Filters:
 async function BuildIdeaValueTree(key,signal) {
@@ -770,7 +789,25 @@ async function BuildIdeaValueTree(key,signal) {
                       let wordObj = JSON.parse(prospectiveEntry.value)
                       wordObj.isDiscarded = true
                       wordObj = JSON.stringify(wordObj)
-                            await IdeaValueTreeBee.put(signal.PROSPECTIVECONTEXT, wordObj)
+                      await IdeaValueTreeBee.put(signal.PROSPECTIVECONTEXT, wordObj)
+                    }
+                    let contextEntry = await IdeaValueTreeBee.get(signal.CONTEXT);
+                    if (contextEntry){
+                      // adjust weighting of prospective to 0
+                      let wordObj = JSON.parse(contextEntry.value)
+                      let tot = wordObj.signallers[key].totalsObj[signal.PROSPECTIVECONTEXT]
+                      let prop = wordObj.signallers[key].propsObj[signal.PROSPECTIVECONTEXT]
+                      wordObj.signallers[key].total -= tot
+                      delete wordObj.signallers[key].totalsObj[signal.PROSPECTIVECONTEXT]
+                      delete wordObj.signallers[key].propsObj[signal.PROSPECTIVECONTEXT]
+                      wordObj.signallers[key].rankedList = wordObj.signallers[key].rankedList.filter(item => item !== signal.PROSPECTIVECONTEXT);
+                      if (key == '0x' + SignalChainCore.key.toString('hex')){
+                        wordObj.children = wordObj.children.filter(item => item !== signal.PROSPECTIVECONTEXT);
+                      }
+                      
+                      console.log('updating wordObj',key,SignalChainCore.key.toString('hex'),wordObj)
+                      wordObj = JSON.stringify(wordObj)
+                      await IdeaValueTreeBee.put(signal.CONTEXT, wordObj)
                     }
 
                 

@@ -268,12 +268,12 @@ ${contextInitiator} is the initiator of context
 ${ideaInitiator} is the initiator of idea
 ${prospectiveInitiator} is the initiator of prospectiveContext
 
-I will pay the initiator* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-I will pay the initiator* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-I will pay the initiator* of prospectiveContext 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
-I will pay future value signallers** 0.1 x ${amount} uBTC in ${currency} for faciliation of the payment.
+I will pay the initiator* of context 0.3 x ${amount} uBTC in ${currency}  within 1 month of an INVOICE signal.
+I will pay the initiator* of idea 0.3 x ${amount} uBTC in ${currency}  within 1 month of an INVOICE signal.
+I will pay the initiator* of prospectiveContext 0.3 x ${amount} uBTC in ${currency}  within 1 month of an INVOICE signal.
+I will pay past value signallers** 0.1 x ${amount} uBTC in ${currency}.
 
-*If I am the initiator, then I will instead pay future value signallers** 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
+*If I am the initiator, then I will instead pay past value signallers** 0.3 x ${amount} uBTC in ${currency}  within 1 month of a valid invoice signal.
 ** via the oo.computer profit share system
 
 I will store the data from which the idea is derived (if any) and track its initiator claim and transfer signals.
@@ -281,9 +281,7 @@ I will store the data from which the idea is derived (if any) and track its init
 If idea is a value signaller, I will store a copy of their value and discard signals.
 If context is a value signaller, I will store a copy of their value and discard signals that have a context of ${prospectivecontext}.
 
-This is signal number ${signalNo} in my set of signals.
-
-I reserve the right to invalidate this signal using a signed discard signal.
+I reserve the right to invalidate this signal using a DISCARD signal.
 `
 let signalHash = ''//hash of signal
             return new Object(
@@ -317,7 +315,7 @@ let signalHash = ''//hash of signal
 
 I am ${signaller}
 
-I hereby invalidate all my prior value signals in the following oo within the oo.computer value tree:
+I hereby invalidate all my prior VALUE signals in the following oo within the oo.computer value tree:
 
 context: ${context}
 idea: ${idea}
@@ -351,7 +349,7 @@ I request payment of ${amount} ${currency} from ${otherSignaller} in relation to
 
 ${words}
 
-in the following value signals:
+in the following VALUE signals:
 
 ${otherSignals}
 
@@ -379,13 +377,12 @@ ${otherSignals}
 
 From now on I will be using the oo.computer signal set object which, when written in UTF-8 encoded text has the SHA256 hash of 0x${signalsetversion}.
 
-I will use these signals to create an oo.computer idea tree at hyper://${ideatree}
 
           `
           let signalHash = ''//hash of signal
                       return new Object(
                                         {
-                                                  SIGNALTYPE: 'CHANGE_SIGNALSET',
+                                                  SIGNALTYPE: 'VERSION',
                                                   SIGNAL : signal,
                                                   SIGNALLER : signaller,
                                                   SIGNALSETVERSION : signalsetversion,
@@ -630,6 +627,15 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
         msgIndex++
         window.api.send('SignalChain:put'+'.'+String(msgIndex),signal)
         return new Promise(r => {window.api.receive('SignalChain:put_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+    }
+
+    NameGet = async (signaller) => {
+        msgIndex++
+        window.api.send('Name:get'+'.'+String(msgIndex),[signaller])
+        let result = await new Promise(r => {window.api.receive('Name:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        result = XORcontextprospective(hexifyString('name'),result,1)
+        if (result.slice(0,6) == '0x7c7c') return stringifyHex(result)
+        else return '...' + result.slice(-6)
     }
 
   

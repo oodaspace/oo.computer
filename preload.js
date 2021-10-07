@@ -23,14 +23,14 @@ contextBridge.exposeInMainWorld(
     "api", {
         send: (channel, data) => {
             console.log('preload sending',channel,channel.split('.')[0],data)
-            let validChannels = ["media:add","media:get","IdeaValueTree:get","SignalChain:put","getMainKey","SignalChain:isInit","lookup"];
+            let validChannels = ["media:add","media:get","IdeaValueTree:get","SignalChain:put","getMainKey","SignalChain:isInit","lookup",'Name:get'];
             if (validChannels.includes(channel.split('.')[0])) {
                 ipcRenderer.send(channel.split('.')[0], [channel.split('.')[1],data]);
             }
         },
         receive: (channel,func) => {
 
-            let validChannels = ["media:add_response","media:get_response","IdeaValueTree:get_response","SignalChain:put_response","getMainKey_response","SignalChain:isInit_response","lookup_response"];
+            let validChannels = ["media:add_response","media:get_response","IdeaValueTree:get_response","SignalChain:put_response","getMainKey_response","SignalChain:isInit_response","lookup_response",'Name:get_response'];
             console.log('preload rcing',channel,channel.split('.')[0],validChannels.includes(channel.split('.')[0]))
             if (validChannels.includes(channel.split('.')[0])) {
                 // Deliberately strip event as it includes `sender` 

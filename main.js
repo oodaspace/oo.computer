@@ -7,13 +7,9 @@ var pump = require('pump');
 const DHT = require('@hyperswarm/dht')
 const node = new DHT()
 const keyPair = DHT.keyPair()
-let Hyperdrive = require('hyperdrive')
-const Corestore = require('corestore')
 let Hypercore = require('hypercore')
 let Hyperbee = require('hyperbee')
 let crypto = require('crypto')
-//const tee = require('teex')
-//const IPFS = require('ipfs')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayConcat = require('uint8arrays/concat')
@@ -26,8 +22,6 @@ let signalChainBee
 let MediaBee
 let ContentTypeBee
 let beeready = false
-let coreready = false
-let ipfsready = false
 let drivesObj = {} //tracks already initiated drives
 let coresObj = {} //tracks already initiated cores
 let getDriveTimer
@@ -46,20 +40,6 @@ let privateKey
 let publicKey
 
 console.log('userDataPath',userDataPath)
-/*try {
-  privateKey = fs.readFileSync(keyStore) + 'privateKey';
-  console.log('loading privateKey', privateKey)
-}
-catch {
-  privateKey = ed.utils.randomPrivateKey();
-  fs.writeFileSync(keyStore, privateKey);
-  console.log('generating privateKey', privateKey)
-}
-
-(async () => {
-   publicKey = await ed.getPublicKey(privateKey);
-})();*/
-
 
 
 let SignalChainCore = new Hypercore(signalChainStore)
@@ -132,22 +112,27 @@ function createDefaultWindow() {
   win.loadURL(`file://${__dirname}/version.html#v${app.getVersion()}`);
   return win;
 }
+
+// track which keys have been announced on the DHT in announcedKeys Array
 let announcedKeys = []
+//Announce, on hyperswarm-dht, a key (this will be used to transfer oo.computer signals between nodes)
 async function announceSignalChain(key){
   if (!(announcedKeys.includes(key))){
         console.log('announcing key',key)
         let bufkey = Buffer.from(key,'hex')
-          let announcestream = node.announce(bufkey,keyPair)
-          for await (const res of announcestream) {
-         // console.log('got res announceQuery1')//res
-          res.peers.forEach(peer => {
-              // console.log(' ********** got peer from announce',peer.publicKey)
-          })
+        let announcestream = node.announce(bufkey,keyPair)
+        for await (const res of announcestream) {
+            // this is needed to flush/initialise:
+            res.peers.forEach(peer => {
+                // console.log(' ********** got peer from announce',peer.publicKey)
+            })
         }
         announcedKeys.push(key)
   }
 }
 
+
+// define a hyperswarm-DHT based server. 
 let server = node.createServer(keyPair)
 server.on('connection', async function (noiseSocket) {
     console.log('server got connection :-)')
@@ -156,6 +141,9 @@ server.on('connection', async function (noiseSocket) {
                 console.log('node got msg',d.toString())
                 let msg = JSON.parse(d.toString())
                 console.log('node got msg',msg.id,SignalChainCore.key.toString('hex'),msg.key)
+                // This is a simple messaging protocol for passing oo.computer signals between nodes:
+                //    RequestSignalChain: This is a request for a signal chain with a give public Key. The node responds by sending the node all associated signals.
+                //    RequestMedia: this is a request for  media (e.g. video, audio etc) associated with an idea (256 word). The node responds with the data if it has it. 
                 switch (msg.id) {
                     case 'RequestSignalChain':
                         let key = msg.key
@@ -171,25 +159,6 @@ server.on('connection', async function (noiseSocket) {
                           console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
                           noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
                         }
-                        /*while (i <= seq){
-                            let signal = await valueSignals.get(i)
-                            if (signal) {
-                              noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
-                            }
-                            else {
-                                let signal = await discardSignals.get(i)
-                                if (signal) {
-                                  noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
-                                }
-                                else {
-                                        let signal = await claimSignals.get(i)
-                                        if (signal) {
-                                          noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${signal}}`)
-                                        }
-                                }
-                            }
-                            i++
-                        }*/
                     break;
                     case 'RequestMedia':
                     console.log('got media request')
@@ -206,6 +175,7 @@ server.on('connection', async function (noiseSocket) {
                 }
     })
 })
+//announce the users signal chain on the hyperswarm DHT when DHT server is running.
 server.on('listening', async function () {
     await signalChainBee.ready()
     let key = SignalChainCore.key
@@ -213,28 +183,24 @@ server.on('listening', async function () {
 })
 server.listen(keyPair)
 
+// track nodes
 let nodesarray = []
+// attempt to look up a signal chain for give key on the hyperswarm DHT.
 async function lookupSignalChain(key){
     let lookupstream = node.lookup(Buffer.from(key,'hex'))
-    //let SignalChain = signalChainBee.sub(key)
     let SignalChain = signalChainBee.sub(String('0x' + SignalChainCore.key.toString('hex')))
-   /* if (!(Object.keys(latestSeq).includes(key.toString('hex')))){
-        latestSeq[key.toString('hex')] = -1
-        signalChains[key.toString('hex')] = {}
-
-    }*/
     console.log('looking up',key.toString('hex'))
     for await (const res of lookupstream) {
-    //console.log('got res of lookupstream',res)
+      // iterate the list of peers that have announced the key
       res.peers.forEach(peer => {
            //console.log(' ********** got peer from lookup',peer.publicKey)
           if (!(nodesarray.includes(peer.publicKey.toString('hex')))) {
               console.log(' got new peer',peer,peer.publicKey == keyPair.publicKey)
               nodesarray.push(peer.publicKey.toString('hex'));
-
                   let skt = node.connect(peer.publicKey)
                   //process.stdin.pipe(skt).pipe(process.stdout)
                   console.log('writing request',`${'0x' + key.toString('hex')}`)
+                  // request the signal chain.
                   skt.write(`{"id" : "RequestSignalChain","startSeq" : 0,"key" : "${'0x' + key.toString('hex')}"}`)//, "endSeq" : ${1}
                   skt.on('data',async (d)=>{
                     console.log('node2 got msg',d.toString())
@@ -248,6 +214,9 @@ async function lookupSignalChain(key){
                     let signaller
                     let check
                     let got
+                    // 'GotSignalChain': received when the remote peer confirms it has the signal chain
+                    // Signal : received when the remote peer is sending a signal. This node reacts by storing it in the local signal chain and idea-value-tree if the idea represents a media file, the node sends a request to the remote peer to send it.
+                    // Media : received when the remote peer sends a media file...
                     switch (msg.id) {
                         case 'GotSignalChain':
                             if (msg.seq > latestSeq[key.toString('hex')]){
@@ -308,8 +277,7 @@ async function lookupSignalChain(key){
                             
                         break;
                         case 'Media':
-// {"id" : "Media", "idea":${msg.idea}, "media" : ${JSON.stringify(media)}, "contenttype" : ${JSON.stringify(contenttype)}}
-console.log('got media!',msg)
+                              //console.log('got media!',msg)
                               if (!(msg.media == 'none')){
                                  //
                                  console.log('got media2!',msg)
@@ -344,30 +312,12 @@ async function putSignal(signal) {
 
 const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
 
-const IPFSready = () => new Promise(async (r) => {
-  while (!ipfsready){
-    await pause(0.5);
-  }
-  r();
-})
 
-const CoreReady = () => new Promise(async (r) => {
-  while (!coreready){
-    await pause(0.5);
-  }
-  r();
-})
+/*********************************************************************************************************/
+// This section is concerned with setup of the electron app
+let win // for browser window
 
-const ServerReady = () => new Promise(async (r) => {
-  while (!serverready){
-    await pause(0.5);
-  }
-  r();
-})
-
-let win
-
-
+// func to create window and load index html into it.
 function createWindow () {
   win = new BrowserWindow({
     fullscreen: false,
@@ -377,17 +327,17 @@ function createWindow () {
 
     }
   })
-
   win.loadFile('index.html');
-
 }
 
+//check for update
 autoUpdater.on("checking-for-update", () => {
   sendStatusToWindow({
     event: "checking-for-update"
   });
 });
 
+// hand update available (note the user notification is done automatically in autoUpdater)
 autoUpdater.on("update-available", info => {
   sendStatusToWindow({
     event: "update-available"
@@ -424,41 +374,36 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 
-let ipfs
-
-
+// when electron ready, create window load html, check for update every minute
 app.whenReady().then(async () => {
-
-/*try {
-    ipfs = await IPFS.create()
-    ipfsready = true
-    const id = await ipfs.id()
-    
-    console.log('IPFS READY',id,ipfsready)
-  } catch (err) {
-    console.error(err)
-  }*/
-
   createWindow()
-  sendStatusToWindow('testing')
   setInterval(function() {
     let a = autoUpdater.checkForUpdatesAndNotify();
     sendStatusToWindow(JSON.stringify(a))
   }, 60000);
 
   app.on('activate', () => {
+    // if no window created above for some reason (shouldn't happen), then create window
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
     }  
   })
 })
 
+// call quit app func when window closed
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
+/*********************************************************************************************************/
+
+
+/*********************************************************************************************************/
+// This section handles messages from the renderer/browser process front-end
+
+// instruct node to lookup a key on the DHT and get signals
 let lookedUpFilterers = []
 ipcMain.on('lookup',async (e,d)=>{
   if (!(lookedUpFilterers.includes(d[1]))){
@@ -470,15 +415,7 @@ ipcMain.on('lookup',async (e,d)=>{
   }
 })
 
-ipcMain.on('readdir',async (e,d)=>{
-  ////console.log('readdir rcd',d);
-  await ready()
-  let result = await new Promise(r => IdeaValueTree.readdir(d[1][1],(e,l)=>{r(l)}))
-  ////console.log('result',result)
-  win.webContents.send('readdir_response.'+String(d[0]),result);
-})
-
-
+// instruct the storage of a media file under a given key
 ipcMain.on('media:add',async (e,d)=>{
   await MediaBee.put(d[1][0],d[1][1]) //await new Promise(r => drive.writeFile(String(d[1][1]), String(d[1][2]),(e)=>{if (e) {r(false)} else {r(true)}}))
   await ContentTypeBee.put(d[1][0],d[1][2])
@@ -488,21 +425,20 @@ ipcMain.on('media:add',async (e,d)=>{
   console.log('content added to media bee',true)
 })
 
+// get a media file for a given key
 ipcMain.on('media:get',async (e,d)=>{
-  //console.log('media CAT',d);
-  let data  = await MediaBee.get(d[1][1]) //uint8ArrayConcat(await all(ipfs.cat(d[1])))
-  //console.log('IPFS CAT result',data,uint8ArrayToString(data))
+
+  let data  = await MediaBee.get(d[1][1]) 
   let contenttype = await ContentTypeBee.get(d[1][1])
- // console.log('media CAT',[data,contenttype]);
   if (data) data = data.value.toString()
-    if(contenttype) contenttype = contenttype.value.toString()
+  if(contenttype) contenttype = contenttype.value.toString()
   win.webContents.send('media:get_response.'+String(d[0]),[data,contenttype])//uint8ArrayToString(data));
-  //console.log('content catted from media bee',uint8ArrayToString(data))
 })
 
 
 //********************************************************
 
+// get the main public key id associated with the user
 ipcMain.on('getMainKey',async (e,d)=>{
   console.log('ipcMain getMainKey')
   let result = SignalChainCore.key.toString('hex')
@@ -510,24 +446,19 @@ ipcMain.on('getMainKey',async (e,d)=>{
   win.webContents.send('getMainKey_response.'+String(d[0]),result);
 })
 
+// get an oo's information associated with a given context and signaller, from the idea-value-tree
 ipcMain.on('IdeaValueTree:get',async (e,d)=>{
-  //await new Promise(r => drive.readFile(String(d[1][1]), 'utf-8',(e,file)=>{r(file)}))
-  // //console.log('result',result)
   let signaller 
-  //console.log('SignalChainCore',SignalChainCore)
   if (d[1][0] == 'default') {signaller = '0x' + SignalChainCore.key.toString('hex')}
   else { signaller = d[1][0]}
   let word = d[1][1]
-  //let sub = IdeaValueTreeBee.sub(signaller)
   let result = await IdeaValueTreeBee.get(word) 
-  
   if (result) result = result.value.toString()
-  //if (!result) result = "falseafsdfadf"
-    console.log('IdeaValueTree:get',signaller,word)
+  console.log('IdeaValueTree:get',signaller,word)
   win.webContents.send('IdeaValueTree:get_response.'+String(d[0]),result);
 })
 
-
+// check if the user has sent an INIT signal yet, returns true if so
 ipcMain.on('SignalChain:isInit',async (e,d)=>{
   await signalChainBee.ready()
   let SignalChain = signalChainBee.sub('0x' + String(SignalChainCore.key.toString('hex')))
@@ -540,18 +471,9 @@ ipcMain.on('SignalChain:isInit',async (e,d)=>{
   else {
     win.webContents.send('SignalChain:isInit_response.'+String(d[0]),false);
   }
-  /*for await (let signalObj of INIT.createReadStream()){
-    
-    let signal = signalObj.value.toString('utf-8')
-    console.log('init signal?in loop',signal)
-      if (signal.SIGNALTYPE == 'INIT'){
-        result = false
-      }
-  }
-  console.log('init signal?2',result,d[0])
-  win.webContents.send('SignalChain:isInit_response.'+String(d[0]),result);*/
 })
 
+// put a signal in the signal chain
 ipcMain.on('SignalChain:put',async (e,d)=>{
   await signalChainBee.ready()
   let SignalChain = signalChainBee.sub(String('0x' + SignalChainCore.key.toString('hex')))
@@ -606,6 +528,7 @@ ipcMain.on('SignalChain:put',async (e,d)=>{
       win.webContents.send('SignalChain:put_response.'+String(d[0]),result);
 })
 
+// checks if a siganller has give him/herself a name. (Value signalled a string in the 'name' context)
 ipcMain.on('Name:get',async (e,d)=>{
       let result
       let nameObj = await IdeaValueTreeBee.get('0x7c7c7c000000000000000000000000000000000000000000000000006e616d65')    //hexifyString('name')  
@@ -626,21 +549,14 @@ ipcMain.on('Name:get',async (e,d)=>{
 })
 
 
-// Build IdeaValueTree From Filters:
+// Build IdeaValueTree for a key and a signal,:
 async function BuildIdeaValueTree(key,signal) {
-  //get filters:
-    // cylce thru get VALUE signals, build init tree. 
     console.log('key?',key,String(SignalChainCore.key.toString('hex')))
     let SignalChain = signalChainBee.sub(key)
     let contexts = SignalChain.sub('VALUE')
     if (signal.SIGNALTYPE == "VALUE"){
-   // for await (let context of contexts.createReadStream()){
-/*              let valueSignals = contexts.sub(context.key)
-              for await (let valueSignalObj of contexts.createReadStream()){*/
                     let seq = signal.SIGNALNO
                     let valueSignal = signal //JSON.parse(valueSignalObj.value)//JSON.parse(dict)
-                    //console.log('valueSignals--->>>>>>>',valueSignalObj,valueSignal)
-
                     let contextEntry = await IdeaValueTreeBee.get(valueSignal.CONTEXT);
                     console.log('adding signal to value tree', valueSignal.IDEA,valueSignal.SIGNALTYPE)
                     if (!contextEntry){
@@ -758,12 +674,7 @@ async function BuildIdeaValueTree(key,signal) {
           let dict = signalJSON
           let seq = dict.seq*/
           let seq = signal.SIGNALNO
-          
- console.log('updating idea bee from DISCARd',signal.PROSPECTIVECONTEXT)
-
-
-           // if (seq > wordObj.signallers[key].seqs[wordObj.signallers[key].seqs.length-1]){
-                     let prospectiveEntry = await IdeaValueTreeBee.get(signal.PROSPECTIVECONTEXT);
+                    let prospectiveEntry = await IdeaValueTreeBee.get(signal.PROSPECTIVECONTEXT);
                     if (!prospectiveEntry){
                       //add new idea entry:
                             let wordObj = {}
@@ -809,9 +720,6 @@ async function BuildIdeaValueTree(key,signal) {
                       wordObj = JSON.stringify(wordObj)
                       await IdeaValueTreeBee.put(signal.CONTEXT, wordObj)
                     }
-
-                
-            //}      
     }// end if //for await discard
     announceSignalChain(key.slice(2))
 }

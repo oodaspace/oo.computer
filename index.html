@@ -634,8 +634,18 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
         window.api.send('Name:get'+'.'+String(msgIndex),[signaller])
         let result = await new Promise(r => {window.api.receive('Name:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         result = XORcontextprospective(hexifyString('name'),result,1)
-        if (result.slice(0,6) == '0x7c7c') return stringifyHex(result)
-        else return '...' + result.slice(-6)
+        if (result.slice(0,6) == '0x7c7c') 
+            { return stringifyHex(result)}
+        else {return '...' + result.slice(-6)}
+    }
+
+    MediaGet = async (idea) => {
+        msgIndex++
+        window.api.send('media:get'+'.'+String(msgIndex),[idea])
+        let result = await new Promise(r => {window.api.receive('media:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        
+        
+        return result
     }
 
   

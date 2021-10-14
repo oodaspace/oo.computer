@@ -427,9 +427,8 @@ ipcMain.on('media:add',async (e,d)=>{
 
 // get a media file for a given key
 ipcMain.on('media:get',async (e,d)=>{
-
-  let data  = await MediaBee.get(d[1][1]) 
-  let contenttype = await ContentTypeBee.get(d[1][1])
+  let data  = await MediaBee.get(d[1][0]) 
+  let contenttype = await ContentTypeBee.get(d[1][0])
   if (data) data = data.value.toString()
   if(contenttype) contenttype = contenttype.value.toString()
   win.webContents.send('media:get_response.'+String(d[0]),[data,contenttype])//uint8ArrayToString(data));

@@ -417,10 +417,13 @@ ipcMain.on('lookup',async (e,d)=>{
 
 // instruct the storage of a media file under a given key
 ipcMain.on('media:add',async (e,d)=>{
+    console.log('putting media',d[1][1],d[1][0],d[1][2])
+    //let media = Buffer.from(d[1][1],'base64')
+    //console.log('putting media2',media)
   await MediaBee.put(d[1][0],d[1][1]) //await new Promise(r => drive.writeFile(String(d[1][1]), String(d[1][2]),(e)=>{if (e) {r(false)} else {r(true)}}))
   await ContentTypeBee.put(d[1][0],d[1][2])
   //to do verify hash/word construction
-  console.log('putting media',d[1][1],d[1][0],d[1][2])
+
   win.webContents.send('media:add_response.'+String(d[0]),true);
   console.log('content added to media bee',true)
 })

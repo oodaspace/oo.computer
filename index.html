@@ -67,11 +67,14 @@ E. Instructions for signalling value
   <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
   <!--<script src="lib/adaptor.js"></script>
   <script src="lib/hyper-sdk-bundle.js"></script>-->
+<link rel="stylesheet" href="lib/default.css">
+<script src="lib/highlight.min.js"></script>
 
 <style>
     html {-ms-overflow-style: none;scrollbar-width: none;height: 100%;overflow-x:auto;overflow-y: hidden;}
     html::-webkit-scrollbar {display: none;}
     body {font-size: 40px;height: 100%;margin:0px;padding: 0px;}
+    .prospectiveiconparent:hover {fill:  lightblue;}
 </style>
 
 <link rel="shortcut icon" href="./icon.png" />
@@ -648,7 +651,21 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
         return result
     }
 
-  
+    DomainIndexGet = async (domain,filter) => {
+        msgIndex++
+        console.log('DomainIndexGet',domain,filter)
+        window.api.send('DomainIndexhtml:get'+'.'+String(msgIndex),[domain,filter])
+        let result = await new Promise(r => {window.api.receive('DomainIndexhtml:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        return result
+    }
+
+    DomainIndexhtmlFromFilters = async (domain,filters) => {
+        msgIndex++
+        console.log('DomainIndexhtmlFromFilters',domain,filters)
+        window.api.send('DomainIndexhtmlFromFilters:get'+'.'+String(msgIndex),[domain,filters])
+        let result = await new Promise(r => {window.api.receive('DomainIndexhtmlFromFilters:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        return result
+    }
 
 
       let getMainKey =  () => new Promise(async r => {
@@ -743,7 +760,7 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
   let createProc = async function(txt) {
     let jel = document.createElement('script');
      jel.innerHTML = txt;
-    document.getElementById('main').append(jel);
+    document.getElementById('base').append(jel);
   }
 
   // make sure there is a dom to put oos in!
@@ -767,21 +784,30 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
 
 // setup Horizontal scrolling.
 window.addEventListener('wheel', (e) => {
-      if (e.target.id =="main" || e.target.id=="base"  || e.target.id=="meta" || e.target.id=="backgroundlabels" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7filterbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7txbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7oobackground"  || e.target === document.getElementsByTagName('html')[0]  || e.target.id=="backgroundoverlay"){
-            window.focus()
-            let wheelDelta = e.wheelDelta;
-            let deltaY = e.deltaY;
-            // handles chrome etc
-            if (wheelDelta) {
-                delta = -wheelDelta / 120;
+      if (e.target.id =="main" || e.target.id=="base"  || e.target.id=="meta" || e.target.id=="backgroundlabels" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7filterbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7txbackground" || e.target.id=="_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xdd81818ffffffffffffffffffffffffffffffffffffffffffffffffff3a3b2b7oobackground"  || e.target === document.getElementsByTagName('html')[0]  || e.target.id=="backgroundoverlay" || e.target.id == "_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xfd81818ffffffffffffffffffffffffffffffffffffff332d2717351b3827377navigator"){
+
+        if (document.getElementById("_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xfd81818ffffffffffffffffffffffffffffffffffffff332d2717351b3827377showhtmlwindow")) {
+            if (document.getElementById("_0x838383ffffffffffffffffffffffffffffffffffffffffffffffffff8b97968c_0xfd81818ffffffffffffffffffffffffffffffffffffff332d2717351b3827377showhtmlwindow").style.display == "none"){
+                    window.focus()
+                    let wheelDelta = e.wheelDelta;
+                    let deltaY = e.deltaY;
+                    // handles chrome etc
+                    if (wheelDelta) {
+                        delta = -wheelDelta / 120;
+                    }
+                    // handles firefox etc
+                    if(deltaY) {
+                        deltaY > 0 ? delta = 1 : delta = -1;
+                    }
+                    window.scrollBy(delta*20,0)
+                    document.getElementById('background').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+                    document.getElementById('backgroundoverlay').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+
+
             }
-            // handles firefox etc
-            if(deltaY) {
-                deltaY > 0 ? delta = 1 : delta = -1;
-            }
-            window.scrollBy(delta*20,0)
-            document.getElementById('background').style.cssText += "left:" +String(window.pageXOffset) + "px;"
-            document.getElementById('backgroundoverlay').style.cssText += "left:" +String(window.pageXOffset) + "px;"
+        }
+       //
+            
       }
 })
 
@@ -795,18 +821,27 @@ window.addEventListener('wheel', (e) => {
 </script>
 
 <!-- main container div -->
-<div id="main" style="width:100%;height:100%;display:grid;grid-template: auto / auto;">
+<div id="main" style="width:100%;height:100%;display:grid;grid-template: auto 110px 30px / auto;">
       <!-- base container div contains all the oos seen in the main functionality of the site -->
 
 
-      <div id="background" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;">
+      <div id="background" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;display: none;">
       </div>
 
-      <div id="backgroundoverlay" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;background-color:transparent;">
+      <div id="backgroundoverlay" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;position:absolute;left:0px;background-color:transparent;display: none;">
       </div>
 
-      <div id="base" style="width:100%;height:100vh;grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective: 1000px;position:absolute;;left:0px;background-color: white;">
+
+
+   
+
+      <div id="base" style="width:100%;height:calc(100vh - 30px);grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective: 1000px;position:absolute;;left:0px;background-color: white;top:0px;">
       </div>
+
+      <div id="websites" style="width:100%;height:calc(100vh - 30px);grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective: 1000px;position:absolute;;left:0px;background-color: white;display: none;">
+      </div>
+
+
 
       <div id="meta" style="display:none;width:100%;height:calc(100% - 330px);grid-area: 1 / 1 / 2 / 2;transition: all 0.5s;perspective-origin: 50% 50px;border-left: 15px solid transparent; margin-left:2px;border-top-left-radius: 40px;border-bottom-left-radius: 40px;perspective:1000px;position:relative;left:0px;">
             <div style="font-size:12px;color:#555;position:relative;top:calc(100vh - 25px);text-align: end;"> </div>

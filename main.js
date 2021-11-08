@@ -14,8 +14,7 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayConcat = require('uint8arrays/concat')
 const all = require('it-all')
-//const ed = require('noble-ed25519')
-
+const bigInt = require("big-integer");
 
 let IdeaValueTreeBee // = new Hyperdrive('./my-first-hyperdrive')
 let signalChainBee
@@ -137,6 +136,13 @@ let server = node.createServer(keyPair)
 server.on('connection', async function (noiseSocket) {
     console.log('server got connection :-)')
     console.log('Remote, local, init public keys', noiseSocket.remotePublicKey, noiseSocket.publicKey)
+    let key
+    let SignalChain
+    let seq
+    let i
+    let valueSignals
+    let discardSignals
+    let claimSignals
     noiseSocket.on('data',async (d)=>{
                 console.log('node got msg',d.toString())
                 let msg = JSON.parse(d.toString())
@@ -146,18 +152,33 @@ server.on('connection', async function (noiseSocket) {
                 //    RequestMedia: this is a request for  media (e.g. video, audio etc) associated with an idea (256 word). The node responds with the data if it has it. 
                 switch (msg.id) {
                     case 'RequestSignalChain':
-                        let key = msg.key
-                        let SignalChain = signalChainBee.sub(key)
-                        let seq = await SignalChain.get('seq')
+                        key = msg.key
+                        SignalChain = signalChainBee.sub(key)
+                        seq = await SignalChain.get('seq')
                         seq = seq ? Number(seq) : seq = 1
-                        let i = 1
-                        let valueSignals = SignalChain.sub('VALUE')
-                        let discardSignals = SignalChain.sub('DISCARD')
-                        let claimSignals = SignalChain.sub('CLAIM')
+                        i = 1
+                        valueSignals = SignalChain.sub('VALUE')
+                        discardSignals = SignalChain.sub('DISCARD')
+                        claimSignals = SignalChain.sub('CLAIM')
 
                         for await (let signal of valueSignals.createReadStream()){
                           console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
                           noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
+                        }
+                    break;
+                    case 'RequestSignalsInContexts':
+                        key = msg.key
+                        SignalChain = signalChainBee.sub(key)
+                        seq = await SignalChain.get('seq')
+                        seq = seq ? Number(seq) : seq = 1
+                        i = 1
+                        valueSignals = SignalChain.sub('VALUE')
+                        discardSignals = SignalChain.sub('DISCARD')
+                        for await (let signal of valueSignals.createReadStream()){
+                          if (signal.CONTEXT == msg.context){
+                              console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
+                              noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
+                          }
                         }
                     break;
                     case 'RequestMedia':
@@ -430,12 +451,17 @@ ipcMain.on('media:add',async (e,d)=>{
 
 // get a media file for a given key
 ipcMain.on('media:get',async (e,d)=>{
-  let data  = await MediaBee.get(d[1][0]) 
-  let contenttype = await ContentTypeBee.get(d[1][0])
+  let media = await mediaGet(d[1][0])
+  win.webContents.send('media:get_response.'+String(d[0]),media)//uint8ArrayToString(data));
+})
+
+async function mediaGet(idea){
+  let data  = await MediaBee.get(idea) 
+  let contenttype = await ContentTypeBee.get(idea)
   if (data) data = data.value.toString()
   if(contenttype) contenttype = contenttype.value.toString()
-  win.webContents.send('media:get_response.'+String(d[0]),[data,contenttype])//uint8ArrayToString(data));
-})
+  return [data,contenttype]
+}
 
 
 //********************************************************
@@ -456,7 +482,7 @@ ipcMain.on('IdeaValueTree:get',async (e,d)=>{
   let word = d[1][1]
   let result = await IdeaValueTreeBee.get(word) 
   if (result) result = result.value.toString()
-  console.log('IdeaValueTree:get',signaller,word)
+ // console.log('IdeaValueTree:get',signaller,word)
   win.webContents.send('IdeaValueTree:get_response.'+String(d[0]),result);
 })
 
@@ -534,7 +560,7 @@ ipcMain.on('SignalChain:put',async (e,d)=>{
 ipcMain.on('Name:get',async (e,d)=>{
       let result
       let nameObj = await IdeaValueTreeBee.get('0x7c7c7c000000000000000000000000000000000000000000000000006e616d65')    //hexifyString('name')  
-      console.log('in name get', d,nameObj)  
+     // console.log('in name get', d,nameObj)  
       if (nameObj){
         nameObj = JSON.parse(nameObj.value.toString())
         if (Object.keys(nameObj.signallers).includes(d[1][0])){
@@ -725,3 +751,364 @@ async function BuildIdeaValueTree(key,signal) {
     }// end if //for await discard
     announceSignalChain(key.slice(2))
 }
+
+
+ipcMain.on('DomainIndexhtml:get',async (e,d)=>{
+  console.log('getting domain index1',d[1][0],d[1][1])
+  let indexhtml = await getDomainIndexhtml(d[1][0],d[1][1])
+  win.webContents.send('DomainIndexhtml:get_response.'+String(d[0]),[indexhtml])//uint8ArrayToString(data));
+})
+
+async function getDomainIndexhtml(domain,filter){
+  // filter =- filter object with weightings of keys JSON
+  // domain = 0x... context which should contain index.html file
+  console.log('getting domain index',domain,filter)
+  let filterObj = JSON.parse(filter)
+  let wordObj = await IdeaValueTreeBee.get(domain)
+  
+  let IndexhtmlObj = {}
+  let indexhtml
+  
+  //get combined totalsObj for domain for each key in filter
+  if (wordObj){
+    wordObj = JSON.parse(wordObj.value.toString())
+    console.log('filterObj',domain,wordObj,filterObj)
+      for (let filterer in filterObj){ 
+        if (Object.keys(wordObj.signallers).includes(filterer)){
+            let totalsObj = wordObj.signallers[filterer].totalsObj
+            for (let word in totalsObj){
+              if (!(Object.keys(IndexhtmlObj).includes(word))){
+                IndexhtmlObj[word] = totalsObj[word] * filterObj[filterer].prop
+              }
+            }
+        }
+      }
+
+    //workout topranked
+
+    let indexhtmls = Object.keys(IndexhtmlObj)
+    let topindexhtml = indexhtmls.sort(function(a, b) {return IndexhtmlObj[b].prop - IndexhtmlObj[a].prop}).reverse()[0]
+    let indexhtmlidea = XORcontextprospective(domain,topindexhtml,3)
+    //get the media
+    indexhtml = await mediaGet(indexhtmlidea)
+    console.log('indexhtml',IndexhtmlObj,indexhtmls,topindexhtml,indexhtml,indexhtmlidea)
+  }
+  else {indexhtml = ''}
+
+  return indexhtml
+  // send back the html
+
+
+
+}
+
+ipcMain.on('DomainIndexhtmlFromFilters:get',async (e,d)=>{
+  console.log('getting domain index1',d[1][0],d[1][1])
+  let indexhtml = await getDomainIndexhtmlFromFilters(d[1][0],d[1][1])
+  win.webContents.send('DomainIndexhtmlFromFilters:get_response.'+String(d[0]),[indexhtml])//uint8ArrayToString(data));
+})
+async function getDomainIndexhtmlFromFilters(domain,filters){
+  // filter =- filter container object with each filter giving weightings of keys JSON
+  // domain = 0x... context which should contain index.html file
+  console.log('getting domain index',domain,filters)
+  let filterContainerObj = JSON.parse(filters)
+  let wordObj = await IdeaValueTreeBee.get(domain)
+  
+  let IndexhtmlObj = {}
+  let indexhtml
+  
+  //get combined totalsObj for domain for each key in filter
+  if (wordObj){
+    wordObj = JSON.parse(wordObj.value.toString())
+    for (let filter in filterContainerObj){
+          let filterObj = filterContainerObj[filter]
+          for (let filterer in filterObj){ 
+              console.log('filterObj',domain,wordObj,filterObj) 
+              if (Object.keys(wordObj.signallers).includes(filterer)){
+                  let totalsObj = wordObj.signallers[filterer].totalsObj
+                  for (let word in totalsObj){
+                    if (!(Object.keys(IndexhtmlObj).includes(word))){
+                      IndexhtmlObj[word] = totalsObj[word] * filterObj[filterer].prop
+                    }
+                  }
+              }
+          }
+    }
+
+    //workout topranked
+
+    let indexhtmls = Object.keys(IndexhtmlObj)
+    let topindexhtml = indexhtmls.sort(function(a, b) {return IndexhtmlObj[b].prop - IndexhtmlObj[a].prop}).reverse()[0]
+    let indexhtmlidea = XORcontextprospective(domain,topindexhtml,3)
+    //get the media
+    indexhtml = await mediaGet(indexhtmlidea)
+    console.log('indexhtml',IndexhtmlObj,indexhtmls,topindexhtml,indexhtml,indexhtmlidea)
+  }
+  else {indexhtml = ''}
+
+  return indexhtml
+  // send back the html
+
+
+
+}
+
+
+
+/************************************************************************************/
+// Utils:
+
+function pad(arr,fmt='utf8') {
+  switch (fmt) {
+    case 'utf8':
+      return toUtf8listFromString('|||').concat(UTF8zeros(29-arr.length).concat(arr));
+    break;
+    case 'ETHaddr' :
+      return toUtf8listFromString('|||ETHaddr||').concat(arr);
+    break;
+    case 'xor' :
+      return UTF8zeros(64-arr.length).concat(arr);
+    break;
+    default:
+  }
+}
+
+function UTF8zeros(leng) {
+  let outlist = [];
+    for (let chrno=0; chrno < leng; chrno++) {
+    outlist.push(0x00);
+  }
+  return outlist;
+}
+
+function toBytesFromHexstlist(hexstrlist){
+  let out = [];
+  for (let i =0; i < hexstrlist.length; i++){
+        let hexstr = hexstrlist[i]
+
+        for (let j = 2; j < hexstr.length; j += 2){
+          out.push(parseInt(hexstr.substr(j, 2), 16));
+        }
+  }
+  return new Uint8Array(out);
+}
+
+
+
+function toUtf8listFromString(str){
+  var outlist = [];
+  for (let charno=0; charno < str.length; charno++) {
+      let charCode = str.codePointAt(charno);
+      if (charCode <= 0x7f){
+        // char encoded as single byte
+        outlist.push(charCode)
+      }
+      else if (charCode >= 0x80 && charCode <= 0x7ff){
+        // char encoded as two bytes, byte 1 is 110xxxxx, byte 2 is 10xxxxxx
+        outlist.push(((charCode >> 6) & 0b00011111) | 0b11000000)
+        outlist.push(((charCode & 0b00111111) | 0b10000000))
+      }
+      else if (charCode >= 0x800 && charCode <= 0xffff){
+        // char encoded as three bytes, byte 1 is 1110xxxx, byte 2 and 3 is 10xxxxxx
+        outlist.push(((charCode >> 12) & 0b00001111) | 0b11100000)
+        outlist.push(((charCode >> 6) & 0b00111111) | 0b10000000)
+        outlist.push((charCode & 0b00111111) | 0b10000000)
+      }
+      else if (charCode >= 0x10000 && charCode <= 0x1fffff){
+        // char encoded as four bytes, byte 1 is 1110xxxx, byte 2 and 3 is 10xxxxxx
+        outlist.push(((charCode >> 18) & 0b00001111) | 0b11110000)
+        outlist.push(((charCode >> 12) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 6) & 0b00111111) | 0b10000000)
+        outlist.push((charCode & 0b00111111) | 0b10000000)
+        charno++
+      }
+      else if (charCode >= 0x200000 && charCode <= 0x3ffffff){
+        // char encoded as five bytes,  byte 1 is 11110xxx, bytes 2, 3 and 4 are 10xxxxxx
+        outlist.push(((charCode >> 24) & 0b00000011) | 0b11111000)
+        outlist.push(((charCode >> 18) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 12) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 6) & 0b00111111) | 0b10000000)
+        outlist.push((charCode & 0b00111111) | 0b10000000)
+        charno++
+      }
+      else if (charCode >= 0x4000000 && charCode <= 0x7fffffff){
+        // char encoded as six bytes,  byte 1 is 11110xxx, bytes 2, 3 and 4 are 10xxxxxx
+        outlist.push(((charCode >> 24) & 0b00000001) | 0b11111100)
+        outlist.push(((charCode >> 24) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 18) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 12) & 0b00111111) | 0b10000000)
+        outlist.push(((charCode >> 6) & 0b00111111) | 0b10000000)
+        outlist.push((charCode & 0b00111111) | 0b10000000)
+        charno++
+      }
+  }
+  return outlist
+}
+
+
+
+function XORcontextprospective(context,prospective,n=0) {
+  if (typeof context != 'string' || typeof prospective != 'string' || prospective.slice(0,2) != "0x" || context.slice(0,2) != "0x"){
+    console.warn('Problem with input to XORcontextprospective',context,typeof context,arguments,n)
+  }
+  if (typeof context != 'string'){
+    throw Error('my TypeError')
+  }
+  if (isNaN(n)){
+   console.warn('XORcontextprospective, my distance is not a number, setting to 0',n,XORcontextprospective.caller )
+   n=0;
+  }
+  try {
+      let shiftn = (Number(n) * 3) % 256;
+      let contextint = bigInt(context.slice(2),16)
+      let prospectiveint = bigInt(prospective.slice(2),16)
+      let innerprospectiveint = bigInt(rotl(prospectiveint,shiftn),16);
+      let innercontextint = bigInt(rotr(contextint,shiftn),16); //possible to improve this turncate int in BInt format?
+      let outcontext = innercontextint.xor(innerprospectiveint);
+      return '0x' + pad((outcontext).toString(16).split(''),fmt='xor').join('')
+  }
+  catch {
+      return '0x0000000000000000000000000000000000000000000000000000000000000000'
+  }
+
+}
+
+function XORcontextidea(context,idea,n=0) {
+  if (typeof context != 'string' || typeof idea != 'string' || idea.slice(0,2) != "0x" || context.slice(0,2) != "0x"){
+    console.warn('Problem with input to XORcontextidea',context,idea,typeof context,typeof idea,arguments,n)
+  }
+  if (typeof context != 'string'){
+    throw Error('my TypeError')
+  }
+  if (isNaN(n)){
+   console.warn('XORcontextidea, my distance is not a number, setting to 0',n,XORcontextidea.caller )
+   n=0;
+  }
+  try {
+      let shiftn = (Number(n) * 3) % 256;
+      let contextint = bigInt(context.slice(2),16)
+      let ideaint = bigInt(idea.slice(2),16)
+      let innercontextint = bigInt(rotr(contextint,shiftn),16);
+      let innerprospectiveint = innercontextint.xor(ideaint) //bigInt(rotr(prospective,n),16); //possible to improve this turncate int in BInt format?
+      let outcontext = rotr(innerprospectiveint,shiftn)
+      return '0x' + outcontext
+  }
+  catch {
+      return '0x0000000000000000000000000000000000000000000000000000000000000000'
+  }
+
+}
+
+function XORideaprospective(idea,prospective,n=0) {
+  if (typeof idea != 'string' || typeof prospective != 'string' || prospective.slice(0,2) != "0x" || idea.slice(0,2) != "0x"){
+    console.warn('XORideaprospective',idea,prospective,typeof idea,typeof prospective,arguments,XORideaprospective.caller)
+  }
+  if (typeof idea != 'string'){
+    throw Error('my TypeError')
+  }
+  if (isNaN(n)){
+   console.warn('XORideaprospective, my distance is not a number, setting to 0',n,XORideaprospective.caller )
+   n=0;
+  }
+  try {
+    let shiftn = (Number(n) * 3) % 256;
+    let prospectiveint = bigInt(prospective.slice(2),16)
+    let ideaint = bigInt(idea.slice(2),16)
+    let innerprospectiveint = bigInt(rotl(prospectiveint,shiftn),16);
+    let innercontextint = innerprospectiveint.xor(ideaint) //bigInt(rotr(prospective,n),16); //possible to improve this turncate int in BInt format?
+    let outcontext = rotl(innercontextint,shiftn)
+    return '0x' + pad((outcontext).toString(16).split(''),fmt='xor').join('')
+  }
+  catch {
+    return '0x0000000000000000000000000000000000000000000000000000000000000000'
+  }
+
+}
+
+function rotr(a,n){
+  let str = a.shiftRight(n).or(a.shiftLeft(256-n)).toString(16)
+  if (str.length >64){
+    str=str.substring(str.length-64)
+  }
+  return pad(str.split(''),fmt='xor').join('') //'0x' +
+}
+
+function rotl(a,n){
+  let str = a.shiftLeft(n).or(a.shiftRight(256-n)).toString(16)
+  if (str.length >64){
+    str=str.substring(str.length-64)
+  }
+  return pad(str.split(''),fmt='xor').join('')
+}
+
+function hexifyString(str,fmt='utf8'){
+  if (isHex(str) && str.length ==66) {
+    var out = str
+  }
+  else if (isHex(str) && str.length <66) {
+    var out = '0x' + pad(str.slice(2).split(''),'xor').join('')
+  }
+  else if (str === '') {
+    var out = '0x' + UTF8zeros(64).join('')
+  }
+  else {
+    var out = '0x'+toHexStrFromByteArray(pad(toUtf8listFromString(str),fmt));
+  }
+  if (out.length !=66) {
+    return 'invalid';
+  }
+  else {
+    return out;
+  }
+}
+
+function isAddress(inidea){
+  if (inidea.length == 42){   //replaced above if to remove web3 dependency for web worker
+    return true
+  }
+  else if( inidea.slice(0,26) == '0x7c7c7c455448616464727c7c'){
+    return true
+  }
+  else if( inidea.slice(0,26) == '0x000000000000000000000000'){
+    if (inidea.slice(26)[0] =='0'){
+      return false;
+    }
+    return true;//web3.utils.isAddress('0x'+inidea.slice(26));//
+  }
+  else if( inidea.slice(-4) == toHexStrFromByteArray(toUtf8listFromString('.eth')).slice(-4)){
+    return true
+  }
+  else if( inidea.slice(-4) == '.eth'){
+    return true
+  }
+  else {
+    return false;
+  }
+}
+
+function isHex(input) {
+    if (input.slice(0,2)=='0x'){
+        return Boolean(input.slice(2).match(/[a-fA-F0-9]+$/));
+    }
+    else {
+        return false;
+    }
+}
+
+ToHex = function (code) {
+    return String.fromCharCode.apply(null, code)//.map((c)=>{let h = c.toString(16); return h.length == 1 ? '0' + h : h});
+}
+
+
+function stringifyHex(hex,pad=false){
+  let str = ''
+    for (let i=0;i<hex.length;i+=2){
+      code = parseInt(hex.substr(i,2), 16);
+          str += String.fromCharCode(code).replace(/00/g,'');
+            }
+ 
+      return str.replace('|||','').replace('\u0000','');//(/(!#0*)/g,'');
+
+}
+
+ 

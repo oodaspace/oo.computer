@@ -560,7 +560,7 @@ ipcMain.on('SignalChain:put',async (e,d)=>{
 ipcMain.on('Name:get',async (e,d)=>{
       let result
       let nameObj = await IdeaValueTreeBee.get('0x7c7c7c000000000000000000000000000000000000000000000000006e616d65')    //hexifyString('name')  
-     // console.log('in name get', d,nameObj)  
+     //console.log('in name get', d)  
       if (nameObj){
         nameObj = JSON.parse(nameObj.value.toString())
         if (Object.keys(nameObj.signallers).includes(d[1][0])){
@@ -803,14 +803,14 @@ async function getDomainIndexhtml(domain,filter){
 }
 
 ipcMain.on('DomainIndexhtmlFromFilters:get',async (e,d)=>{
-  console.log('getting domain index1',d[1][0],d[1][1])
-  let indexhtml = await getDomainIndexhtmlFromFilters(d[1][0],d[1][1])
+  console.log('getting domain index1',d[1][0],d[1][1],d[1][2])
+  let indexhtml = await getDomainIndexhtmlFromFilters(d[1][0],d[1][1],d[1][2])
   win.webContents.send('DomainIndexhtmlFromFilters:get_response.'+String(d[0]),[indexhtml])//uint8ArrayToString(data));
 })
-async function getDomainIndexhtmlFromFilters(domain,filters){
+async function getDomainIndexhtmlFromFilters(domain,filters,distance){
   // filter =- filter container object with each filter giving weightings of keys JSON
   // domain = 0x... context which should contain index.html file
-  console.log('getting domain index',domain,filters)
+  console.log('getting domain index',domain,filters,distance)
   let filterContainerObj = JSON.parse(filters)
   let wordObj = await IdeaValueTreeBee.get(domain)
   
@@ -838,8 +838,9 @@ async function getDomainIndexhtmlFromFilters(domain,filters){
     //workout topranked
 
     let indexhtmls = Object.keys(IndexhtmlObj)
-    let topindexhtml = indexhtmls.sort(function(a, b) {return IndexhtmlObj[b].prop - IndexhtmlObj[a].prop}).reverse()[0]
-    let indexhtmlidea = XORcontextprospective(domain,topindexhtml,3)
+    let topindexhtml = indexhtmls.sort(function(a, b) {return IndexhtmlObj[b] - IndexhtmlObj[a]}).reverse()[0]
+    //let topindexhtml = indexhtmls.sort(function(a, b) {return IndexhtmlObj[b].prop - IndexhtmlObj[a].prop}).reverse()[0]
+    let indexhtmlidea = XORcontextprospective(domain,topindexhtml,distance)
     //get the media
     indexhtml = await mediaGet(indexhtmlidea)
     console.log('indexhtml',IndexhtmlObj,indexhtmls,topindexhtml,indexhtml,indexhtmlidea)

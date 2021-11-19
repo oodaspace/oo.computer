@@ -636,9 +636,9 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
         msgIndex++
         window.api.send('Name:get'+'.'+String(msgIndex),[signaller])
         let result = await new Promise(r => {window.api.receive('Name:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
-        result = XORcontextprospective(hexifyString('name'),result,1)
-        if (result.slice(0,6) == '0x7c7c') 
-            { return stringifyHex(result)}
+        let nameresult = XORcontextprospective(hexifyString('name'),result,1)
+        if (nameresult.slice(0,6) == '0x7c7c') 
+            { return stringifyHex(nameresult)}
         else {return '...' + result.slice(-6)}
     }
 
@@ -659,10 +659,10 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
         return result
     }
 
-    DomainIndexhtmlFromFilters = async (domain,filters) => {
+    DomainIndexhtmlFromFilters = async (domain,filters,distance) => {
         msgIndex++
-        console.log('DomainIndexhtmlFromFilters',domain,filters)
-        window.api.send('DomainIndexhtmlFromFilters:get'+'.'+String(msgIndex),[domain,filters])
+        console.log('DomainIndexhtmlFromFilters',domain,filters,distance)
+        window.api.send('DomainIndexhtmlFromFilters:get'+'.'+String(msgIndex),[domain,filters,distance])
         let result = await new Promise(r => {window.api.receive('DomainIndexhtmlFromFilters:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         return result
     }

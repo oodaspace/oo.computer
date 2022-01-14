@@ -668,13 +668,13 @@ console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+St
     }
 
 
-      let getMainKey =  () => new Promise(async r => {
+    let getMainKey =  () => new Promise(async r => {
 
-            window.api.send('getMainKey'+'.'+String(msgIndex),[])
-            window.api.receive('getMainKey_response'+'.'+String(msgIndex),(result)=>{
-                r(result)
-            })
+        window.api.send('getMainKey'+'.'+String(msgIndex),[])
+        window.api.receive('getMainKey_response'+'.'+String(msgIndex),(result)=>{
+            r(result)
         })
+    })
       console.log('about to get mainkey')
       mainKey = await getMainKey()
       console.log('mainkey=',mainKey)

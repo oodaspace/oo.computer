@@ -2,6 +2,13 @@
 
 See https://oo.computer
 
+## To Run:
+
+1. clone this repo `git clone `
+2. `cd oo.computer`
+3. `npm install`
+4. `npm run start`
+
 ## Build instructions
 
 1. clone this repo

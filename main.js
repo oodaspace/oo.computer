@@ -38,6 +38,8 @@ let hashIndexedSignals = userDataPath + '/hashIndexedSignals'
 let privateKey
 let publicKey
 
+const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
+
 console.log('userDataPath',userDataPath)
 
 
@@ -198,6 +200,7 @@ server.on('connection', async function (noiseSocket) {
 })
 //announce the users signal chain on the hyperswarm DHT when DHT server is running.
 server.on('listening', async function () {
+    await pause(1) // allow time for signalChainBee to be set...
     await signalChainBee.ready()
     let key = SignalChainCore.key
     announceSignalChain(key)
@@ -331,7 +334,7 @@ async function putSignal(signal) {
   return true
 }
 
-const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
+
 
 
 /*********************************************************************************************************/

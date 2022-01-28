@@ -205,6 +205,9 @@ server.on('connection', async function (noiseSocket) {
                     default:
                 }
     })
+    noiseSocket.on('error',(e)=>{
+                    console.log('Server socket error',e)
+    })
 })
 //announce the users signal chain on the hyperswarm DHT when DHT server is running.
 server.on('listening', async function () {
@@ -321,7 +324,11 @@ async function lookupSignalChain(key){
                     }
                   
                   })
-                  skt.on('error',(e)=>{console.log('socket error',e)})
+                  skt.on('error',(e)=>{
+                    console.log('socket error',e)
+                    console.log('re trying')
+                    lookupSignalChain(key)
+                  })
                 //use node.create server to match above
           }
       })

@@ -1,7 +1,7 @@
 {
   "name": "oo.computer",
   "author": "ooda space ltd <lee@ooda.space>",
-  "version": "0.0.115",
+  "version": "0.0.116",
   "description": "  The oo.computer is a transparent system to contextualise and rank ideas with others.  It offers those who signal value in ideas and contexts a share of profits that arise from them",
   "homepage": "https://oo.computer",
   "main": "main.js",

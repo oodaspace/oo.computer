@@ -165,7 +165,9 @@ server.on('connection', async function (noiseSocket) {
 
                         for await (let signal of valueSignals.createReadStream()){
                           console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
-                          noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
+                          if (!noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)){
+                            await new Promise(r => noiseSocket.once('drain'),r)
+                          }
                         }
                     break;
                     case 'RequestSignalsInContexts':
@@ -179,7 +181,9 @@ server.on('connection', async function (noiseSocket) {
                         for await (let signal of valueSignals.createReadStream()){
                           if (signal.CONTEXT == msg.context){
                               console.log('sending signal',JSON.parse(signal.value.toString()).IDEA)
-                              noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)
+                              if (!noiseSocket.write(`{"id" : "Signal", "seq" : ${i}, "signal" : ${JSON.stringify(signal.value.toString())}}`)){
+                                await new Promise(r => noiseSocket.once('drain'),r)
+                              }
                           }
                         }
                     break;
@@ -188,10 +192,14 @@ server.on('connection', async function (noiseSocket) {
                       media = await MediaBee.get(msg.idea)
                       contenttype = await ContentTypeBee.get(msg.idea)
                       if (media && contenttype){
-                        noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "${media.value.toString()}", "contenttype" : "${contenttype.value.toString()}"}`)
+                              if (!noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "${media.value.toString()}", "contenttype" : "${contenttype.value.toString()}"}`)){
+                                await new Promise(r => noiseSocket.once('drain'),r)
+                              }
                       }
                       else {
-                        noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "none", "contenttype" : "none"}`)
+                            if (!noiseSocket.write(`{"id" : "Media", "idea":"${msg.idea}", "media" : "none", "contenttype" : "none"}`)){
+                                await new Promise(r => noiseSocket.once('drain'),r)
+                            }
                       }
                       break;
                     default:

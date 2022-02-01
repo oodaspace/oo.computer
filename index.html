@@ -464,7 +464,6 @@ let oo
 
 let mediaObj={}
 let MIMEObj={}
-console.log('dot1')
 
 
 let keyPair
@@ -609,16 +608,15 @@ let SignalChainPut
   await loadScript("lib/jdenticon.min.js")
   await loadScript("lib/purify.min.js");
 
-  //hypersdk = await window.hyperSDK({swarmOpts:{preferredPort:42420,wsProxy:'wss://oo.computer/proxy'}});//,webrtcBootstrap:'https://109.123.82.242/proxy'
 
-    console.log('ins init needed? ',initNeeded)
-   // new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(1),(result)=>{console.log('got initNeeded?',result);r(result);})}).then(r => initNeeded = r)
-window.api.send('SignalChain:isInit'+'.'+String(1))
+   IsInitNeeded = async () => {
+        msgIndex++
+        window.api.send('SignalChain:isInit'+'.'+String(msgIndex))
+        return new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+    }
 
-initNeeded = await new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(1),(result)=>{r(result)})})
-initNeeded = !initNeeded
-console.log('ins init needed? 2',initNeeded,'SignalChain:isInit_response'+'.'+String(1),window.api.receive)
-
+    initNeeded = await IsInitNeeded
+    initNeeded = !initNeeded
 
    IdeaValueTreeGet = async (word,signaller='default') => {
         msgIndex++

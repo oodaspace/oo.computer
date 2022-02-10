@@ -1,46 +1,46 @@
-const {
-    contextBridge,
-    ipcRenderer
-} = require("electron");
-let Hyperdrive = require('hyperdrive')
-let Hypercore = require('hypercore')
-const { Server: HyperspaceServer } = require('hyperspace')
-const server = new HyperspaceServer()
-let client
-const { Client: HyperspaceClient } = require('hyperspace')
-setTimeout(function() {
+const { contextBridge, ipcRenderer} = require("electron");
 
- client = new HyperspaceClient()
+let validIds = [   "media:add",
+                        "media:get",
+                        "IdeaValueTree:get",
+                        "SignalChain:put",
+                        "getMainKey",
+                        "SignalChain:isInit",
+                        "lookup",
+                        "Name:get",
+                        "DomainIndexhtml:get",
+                        "DomainIndexhtmlFromFilters:get"
+                    ];
 
-}, 500);
-
-let drivesObj = {}
-
-let index = 0
-//https://stackoverflow.com/a/59888788/1461850
+let validReturnIds = [
+                        "media:add_response",
+                        "media:get_response",
+                        "IdeaValueTree:get_response",
+                        "SignalChain:put_response",
+                        "getMainKey_response",
+                        "SignalChain:isInit_response",
+                        "lookup_response",
+                        "Name:get_response",
+                        "DomainIndexhtml:get_response",
+                        "DomainIndexhtmlFromFilters:get_response"
+                    ];
+//***************************************
+//inspired by https://stackoverflow.com/a/59888788
 contextBridge.exposeInMainWorld(
-
-    "api", {
-        send: (channel, data) => {
-            //console.log('preload sending',channel,channel.split('.')[0],data)
-            let validChannels = ["media:add","media:get","IdeaValueTree:get","SignalChain:put","getMainKey","SignalChain:isInit","lookup",'Name:get','DomainIndexhtml:get','DomainIndexhtmlFromFilters:get'];
-            if (validChannels.includes(channel.split('.')[0])) {
-                ipcRenderer.send(channel.split('.')[0], [channel.split('.')[1],data]);
+    "electron_main_process_channel",{
+        tomainjs: (id, data)=>{
+            if (validIds.includes(id.split('.')[0])) {
+                ipcRenderer.send(id.split('.')[0], [id.split('.')[1],data]);
             }
         },
-        receive: (channel,func) => {
-
-            let validChannels = ["media:add_response","media:get_response","IdeaValueTree:get_response","SignalChain:put_response","getMainKey_response","SignalChain:isInit_response","lookup_response",'Name:get_response','DomainIndexhtml:get_response','DomainIndexhtmlFromFilters:get_response'];
-            //console.log('preload rcing',channel,channel.split('.')[0],validChannels.includes(channel.split('.')[0]))
-            if (validChannels.includes(channel.split('.')[0])) {
-                // Deliberately strip event as it includes `sender` 
-                //console.log('preload send response',channel,func)
-                ipcRenderer.on(channel, (event, ...args) => func(...args));
+        frommainjs: (id, func)=>{
+            if (validReturnIds.includes(id.split('.')[0])) {
+                ipcRenderer.on(id, (event, ...args) => func(...args));
             }
         }
     }
-
 );
+//***************************************
 
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {

@@ -91,11 +91,11 @@ async function IdeaValueTreeExists(){
     
     let ind = String(IdeaValueTreeIndex)
     IdeaValueTreeIndex++
-    window.api.send('IdeaValueTree:exists'+'.'+ind)
+    window.electron_main_process_channel.tomainjs('IdeaValueTree:exists'+'.'+ind)
     return new Promise (r => {
         
         console.log('awaiting reponse for','IdeaValueTree:exists_response'+'.'+ind)
-        window.api.receive('IdeaValueTree:exists_response'+'.'+ind,(result)=>{
+        window.electron_main_process_channel.frommainjs('IdeaValueTree:exists_response'+'.'+ind,(result)=>{
             console.log('got reponse for','IdeaValueTree:exists_response'+'.'+ind,result)
                result = r(result)
             })
@@ -119,8 +119,8 @@ class HyperDrive {
         return new Promise(r => {
             this.index++;
             let path = '/'
-            window.api.send('Hyperdrive:init.'+String(key)+String(this.index),[key])
-            window.api.receive('Hyperdrive:init_response.'+String(key)+String(this.index),(result)=>{
+            window.electron_main_process_channel.tomainjs('Hyperdrive:init.'+String(key)+String(this.index),[key])
+            window.electron_main_process_channel.frommainjs('Hyperdrive:init_response.'+String(key)+String(this.index),(result)=>{
                 this.isReady = true;
                 r(result)
             })
@@ -128,8 +128,8 @@ class HyperDrive {
     async readdir(path){
         return new Promise(r => {
             this.index++;
-            window.api.send('Hyperdrive:readdir.'+String(this.key)+String(this.index),[this.key,path])
-            window.api.receive('Hyperdrive:readdir_response.'+String(this.key)+String(this.index),(result)=>{
+            window.electron_main_process_channel.tomainjs('Hyperdrive:readdir.'+String(this.key)+String(this.index),[this.key,path])
+            window.electron_main_process_channel.frommainjs('Hyperdrive:readdir_response.'+String(this.key)+String(this.index),(result)=>{
                 r(result)
             })
         })
@@ -137,8 +137,8 @@ class HyperDrive {
     async readFile(file){
         return new Promise(r => {
                 this.index++;
-                window.api.send('Hyperdrive:readFile.'+String(this.key)+String(this.index),[this.key,file])
-                window.api.receive('Hyperdrive:readFile_response.'+String(this.key)+String(this.index),(result)=>{
+                window.electron_main_process_channel.tomainjs('Hyperdrive:readFile.'+String(this.key)+String(this.index),[this.key,file])
+                window.electron_main_process_channel.frommainjs('Hyperdrive:readFile_response.'+String(this.key)+String(this.index),(result)=>{
                 r(result)
             })
         })
@@ -146,8 +146,8 @@ class HyperDrive {
     async writeFile(path,file){
         return new Promise(r => {
             this.index++;
-            window.api.send('Hyperdrive:writeFile.'+String(this.key)+String(this.index),[this.key,path,file])
-            window.api.receive('Hyperdrive:writeFile_response.'+String(this.key)+String(this.index),(result)=>{
+            window.electron_main_process_channel.tomainjs('Hyperdrive:writeFile.'+String(this.key)+String(this.index),[this.key,path,file])
+            window.electron_main_process_channel.frommainjs('Hyperdrive:writeFile_response.'+String(this.key)+String(this.index),(result)=>{
                 r(result)
             })
         })
@@ -598,7 +598,7 @@ let SignalChainPut
 ;(async function(){
 
 
-  window.api.receive("console_message",(msg)=>{console.log('MSG: ',msg)})
+  window.electron_main_process_channel.frommainjs("console_message",(msg)=>{console.log('MSG: ',msg)})
 
   await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
   console.log('dom loaded')
@@ -611,8 +611,8 @@ let SignalChainPut
 
    IsInitNeeded = async () => {
         msgIndex++
-        window.api.send('SignalChain:isInit'+'.'+String(msgIndex))
-        return new Promise(r => {window.api.receive('SignalChain:isInit_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('SignalChain:isInit'+'.'+String(msgIndex))
+        return new Promise(r => {window.electron_main_process_channel.frommainjs('SignalChain:isInit_response'+'.'+String(msgIndex),(result)=>{r(result)})})
     }
 
     initNeeded = await IsInitNeeded
@@ -620,20 +620,20 @@ let SignalChainPut
 
    IdeaValueTreeGet = async (word,signaller='default') => {
         msgIndex++
-        window.api.send('IdeaValueTree:get'+'.'+String(msgIndex),[signaller,word])
-        return new Promise(r => {window.api.receive('IdeaValueTree:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('IdeaValueTree:get'+'.'+String(msgIndex),[signaller,word])
+        return new Promise(r => {window.electron_main_process_channel.frommainjs('IdeaValueTree:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
     }
 
     SignalChainPut = async (signal) => {
         msgIndex++
-        window.api.send('SignalChain:put'+'.'+String(msgIndex),signal)
-        return new Promise(r => {window.api.receive('SignalChain:put_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('SignalChain:put'+'.'+String(msgIndex),signal)
+        return new Promise(r => {window.electron_main_process_channel.frommainjs('SignalChain:put_response'+'.'+String(msgIndex),(result)=>{r(result)})})
     }
 
     NameGet = async (signaller) => {
         msgIndex++
-        window.api.send('Name:get'+'.'+String(msgIndex),[signaller])
-        let result = await new Promise(r => {window.api.receive('Name:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('Name:get'+'.'+String(msgIndex),[signaller])
+        let result = await new Promise(r => {window.electron_main_process_channel.frommainjs('Name:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         let nameresult = XORcontextprospective(hexifyString('name'),result,1)
         if (nameresult.slice(0,6) == '0x7c7c') 
             { return stringifyHex(nameresult)}
@@ -642,8 +642,8 @@ let SignalChainPut
 
     MediaGet = async (idea) => {
         msgIndex++
-        window.api.send('media:get'+'.'+String(msgIndex),[idea])
-        let result = await new Promise(r => {window.api.receive('media:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('media:get'+'.'+String(msgIndex),[idea])
+        let result = await new Promise(r => {window.electron_main_process_channel.frommainjs('media:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         
         
         return result
@@ -652,24 +652,24 @@ let SignalChainPut
     DomainIndexGet = async (domain,filter) => {
         msgIndex++
         console.log('DomainIndexGet',domain,filter)
-        window.api.send('DomainIndexhtml:get'+'.'+String(msgIndex),[domain,filter])
-        let result = await new Promise(r => {window.api.receive('DomainIndexhtml:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('DomainIndexhtml:get'+'.'+String(msgIndex),[domain,filter])
+        let result = await new Promise(r => {window.electron_main_process_channel.frommainjs('DomainIndexhtml:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         return result
     }
 
     DomainIndexhtmlFromFilters = async (domain,filters,distance) => {
         msgIndex++
         console.log('DomainIndexhtmlFromFilters',domain,filters,distance)
-        window.api.send('DomainIndexhtmlFromFilters:get'+'.'+String(msgIndex),[domain,filters,distance])
-        let result = await new Promise(r => {window.api.receive('DomainIndexhtmlFromFilters:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
+        window.electron_main_process_channel.tomainjs('DomainIndexhtmlFromFilters:get'+'.'+String(msgIndex),[domain,filters,distance])
+        let result = await new Promise(r => {window.electron_main_process_channel.frommainjs('DomainIndexhtmlFromFilters:get_response'+'.'+String(msgIndex),(result)=>{r(result)})})
         return result
     }
 
 
     let getMainKey =  () => new Promise(async r => {
 
-        window.api.send('getMainKey'+'.'+String(msgIndex),[])
-        window.api.receive('getMainKey_response'+'.'+String(msgIndex),(result)=>{
+        window.electron_main_process_channel.tomainjs('getMainKey'+'.'+String(msgIndex),[])
+        window.electron_main_process_channel.frommainjs('getMainKey_response'+'.'+String(msgIndex),(result)=>{
             r(result)
         })
     })

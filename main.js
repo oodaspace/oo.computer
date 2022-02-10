@@ -1,33 +1,26 @@
 const { app, BrowserView, BrowserWindow,ipcMain } = require('electron');
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
-const  fs  = require( 'fs');
-var pump = require('pump');
+const path = require('path'); // used to reference preload.js in electron setup
 
 const DHT = require('@hyperswarm/dht')
 const node = new DHT()
 const keyPair = DHT.keyPair()
 let Hypercore = require('hypercore')
 let Hyperbee = require('hyperbee')
-let crypto = require('crypto')
+
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const uint8ArrayConcat = require('uint8arrays/concat')
-const all = require('it-all')
 const bigInt = require("big-integer");
 
-let IdeaValueTreeBee // = new Hyperdrive('./my-first-hyperdrive')
+// init global vars for hyperBees
+let IdeaValueTreeBee 
 let signalChainBee
 let MediaBee
 let ContentTypeBee
-let beeready = false
-let drivesObj = {} //tracks already initiated drives
-let coresObj = {} //tracks already initiated cores
-let getDriveTimer
-let signallerObj = {} // index by signaller signal chain key. 
-let connection = {}
-const userDataPath = app.getPath('userData');
 
+const userDataPath = app.getPath('userData');
 
 let signalChainStore = userDataPath + '/signalChains'
 let ideaTreeStore = userDataPath + '/ideaTree'
@@ -35,14 +28,13 @@ let mediaStore = userDataPath + '/media'
 let contentTypeStore = userDataPath + '/contentTypes'
 let keyStore = userDataPath + '/keyStore'
 let hashIndexedSignals = userDataPath + '/hashIndexedSignals'
-let privateKey
-let publicKey
 
 const pause =  sec => new Promise(r => setTimeout(r, 1000 * sec))
 
 console.log('userDataPath',userDataPath)
 
-
+//*************************************************************
+// Initialise hypercores and hyperbees:
 let SignalChainCore = new Hypercore(signalChainStore)
 SignalChainCore.ready(()=>{
   signalChainBee = new Hyperbee(SignalChainCore,{
@@ -79,40 +71,9 @@ ContentTypeCore.ready(()=>{
     valueEncoding: 'binary'
   })
 })
+//*************************************************************
 
-console.log('privateKey is: ', privateKey)
 
-let signalChains = {}
-
-let topicsjoined =[]
-let swarmInit = false
-function isJSON(str) {
-    try { JSON.parse(str) } catch (e) { return false; }
-    return true;
-}
-let seed = crypto.randomBytes(32)
-
-const path = require('path');
-
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = "info";
-
-log.info("App starting...");
-
-function sendStatusToWindow(text) {
-  log.info(text);
-  win.webContents.send('console_message', text);
-}
-
-function createDefaultWindow() {
-  win = new BrowserWindow();
-  win.webContents.openDevTools();
-  win.on('closed', () => {
-    win = null;
-  });
-  win.loadURL(`file://${__dirname}/version.html#v${app.getVersion()}`);
-  return win;
-}
 
 // track which keys have been announced on the DHT in announcedKeys Array
 let announcedKeys = []
@@ -350,11 +311,19 @@ async function putSignal(signal) {
 }
 
 
-
-
 /*********************************************************************************************************/
 // This section is concerned with setup of the electron app
 let win // for browser window
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = "info";
+
+log.info("App starting...");
+
+function sendStatusToWindow(text) {
+  log.info(text);
+  win.webContents.send('console_message', text);
+}
 
 // func to create window and load index html into it.
 function createWindow () {
@@ -407,10 +376,6 @@ autoUpdater.on("update-downloaded", info => {
   sendStatusToWindow({
     event: "update-downloaded"
   });
-});
-
-app.on("window-all-closed", () => {
-  app.quit();
 });
 
 // when electron ready, create window load html, check for update every minute
@@ -1081,30 +1046,6 @@ function hexifyString(str,fmt='utf8'){
   }
 }
 
-function isAddress(inidea){
-  if (inidea.length == 42){   //replaced above if to remove web3 dependency for web worker
-    return true
-  }
-  else if( inidea.slice(0,26) == '0x7c7c7c455448616464727c7c'){
-    return true
-  }
-  else if( inidea.slice(0,26) == '0x000000000000000000000000'){
-    if (inidea.slice(26)[0] =='0'){
-      return false;
-    }
-    return true;//web3.utils.isAddress('0x'+inidea.slice(26));//
-  }
-  else if( inidea.slice(-4) == toHexStrFromByteArray(toUtf8listFromString('.eth')).slice(-4)){
-    return true
-  }
-  else if( inidea.slice(-4) == '.eth'){
-    return true
-  }
-  else {
-    return false;
-  }
-}
-
 function isHex(input) {
     if (input.slice(0,2)=='0x'){
         return Boolean(input.slice(2).match(/[a-fA-F0-9]+$/));
@@ -1113,11 +1054,6 @@ function isHex(input) {
         return false;
     }
 }
-
-ToHex = function (code) {
-    return String.fromCharCode.apply(null, code)//.map((c)=>{let h = c.toString(16); return h.length == 1 ? '0' + h : h});
-}
-
 
 function stringifyHex(hex,pad=false){
   let str = ''

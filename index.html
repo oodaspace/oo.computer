@@ -65,10 +65,7 @@ E. Instructions for signalling value
 -->
 <head>
   <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
-  <!--<script src="lib/adaptor.js"></script>
-  <script src="lib/hyper-sdk-bundle.js"></script>-->
 <link rel="stylesheet" href="lib/default.css">
-<script src="lib/highlight.min.js"></script>
 
 <style>
     html {-ms-overflow-style: none;scrollbar-width: none;height: 100%;overflow-x:auto;overflow-y: hidden;}
@@ -85,76 +82,6 @@ E. Instructions for signalling value
 <script id="init">
 let mainKey
 let msgIndex = 0
-/*let IdeaValueTreeIndex =0
-let signalChainIndex =0
-async function IdeaValueTreeExists(){
-    
-    let ind = String(IdeaValueTreeIndex)
-    IdeaValueTreeIndex++
-    window.electron_main_process_channel.tomainjs('IdeaValueTree:exists'+'.'+ind)
-    return new Promise (r => {
-        
-        console.log('awaiting reponse for','IdeaValueTree:exists_response'+'.'+ind)
-        window.electron_main_process_channel.frommainjs('IdeaValueTree:exists_response'+'.'+ind,(result)=>{
-            console.log('got reponse for','IdeaValueTree:exists_response'+'.'+ind,result)
-               result = r(result)
-            })
-    })
-    
-}*/
-/*
-class HyperDrive {
-    
-    constructor(key){
-        if (!key) key='';
-        return (async () => {
-            this.key = await this.init(key);
-            return this;
-        })()
-        //this.init(key).then(r => {this.key = r});
-    }
-    isReady = false;
-    index = 0
-    async init(key){
-        return new Promise(r => {
-            this.index++;
-            let path = '/'
-            window.electron_main_process_channel.tomainjs('Hyperdrive:init.'+String(key)+String(this.index),[key])
-            window.electron_main_process_channel.frommainjs('Hyperdrive:init_response.'+String(key)+String(this.index),(result)=>{
-                this.isReady = true;
-                r(result)
-            })
-        })}
-    async readdir(path){
-        return new Promise(r => {
-            this.index++;
-            window.electron_main_process_channel.tomainjs('Hyperdrive:readdir.'+String(this.key)+String(this.index),[this.key,path])
-            window.electron_main_process_channel.frommainjs('Hyperdrive:readdir_response.'+String(this.key)+String(this.index),(result)=>{
-                r(result)
-            })
-        })
-    }
-    async readFile(file){
-        return new Promise(r => {
-                this.index++;
-                window.electron_main_process_channel.tomainjs('Hyperdrive:readFile.'+String(this.key)+String(this.index),[this.key,file])
-                window.electron_main_process_channel.frommainjs('Hyperdrive:readFile_response.'+String(this.key)+String(this.index),(result)=>{
-                r(result)
-            })
-        })
-    }
-    async writeFile(path,file){
-        return new Promise(r => {
-            this.index++;
-            window.electron_main_process_channel.tomainjs('Hyperdrive:writeFile.'+String(this.key)+String(this.index),[this.key,path,file])
-            window.electron_main_process_channel.frommainjs('Hyperdrive:writeFile_response.'+String(this.key)+String(this.index),(result)=>{
-                r(result)
-            })
-        })
-    }
-}
-*/
-	
 
 // add string replaceAll polyfill
 if (!String.prototype.replaceAll)

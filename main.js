@@ -9,9 +9,6 @@ const keyPair = DHT.keyPair()
 let Hypercore = require('hypercore')
 let Hyperbee = require('hyperbee')
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
-const uint8ArrayToString = require('uint8arrays/to-string')
-const uint8ArrayConcat = require('uint8arrays/concat')
 const bigInt = require("big-integer");
 
 // init global vars for hyperBees
